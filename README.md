@@ -1,7 +1,8 @@
 # SAM Segmentator
 
 SAM Segmentator is an GUI application created for educational segmetational purposes.
-Segmentator outputs: - Original image
+Segmentator outputs: 
+  - Original image
   - Mask
   - Txt annotation (for models like YOLO)
 
@@ -24,7 +25,9 @@ Segmentator outputs: - Original image
    ```bash
     https://github.com/opencv/opencv.git
 
-4. Build torch and torchvision from https://pytorch.org/get-started/previous-versions/
+4. Build torch and torchvision from
+   ```bash
+   https://pytorch.org/get-started/previous-versions/
 
 ## Usage
 
@@ -35,3 +38,11 @@ To start the application, build the Python executable and start it.
 3. Perform segemetation using SAM
 4. Edit segmentation (if neccessary)
 5. Save the segmetation results
+
+## Features
+
+Segment using Point prompt
+Segment using Box prompt
+Edit the segmentation
+Accept or Reject segmentation
+
