@@ -13,15 +13,15 @@ Segmentator outputs: - Original image
 ## Installation
 
 1. Clone the repo:
-   '''bash
+   ```bash
    git clone https://github.com/lukasiktar/SAM_segmentator.git
 
 2. Download the SAM model from:
-   '''bash
+   ```bash
    https://github.com/facebookresearch/segment-anything.git
 
 3. Install Opencv library from:
-   '''bash
+   ```bash
     https://github.com/opencv/opencv.git
 
 4. Build torch and torchvision from https://pytorch.org/get-started/previous-versions/
