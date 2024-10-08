@@ -29,6 +29,11 @@ Segmentator outputs:
    ```bash
    https://pytorch.org/get-started/previous-versions/
 
+5. Install Tkinter
+   ```bash
+  sudo apt install python3-tk
+   
+
 ## Usage
 
 To start the application, build the Python executable and start it.
