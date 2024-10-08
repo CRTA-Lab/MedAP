@@ -8,6 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from segment_anything import sam_model_registry, SamPredictor
+from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
+from SAM_Med2D.segment_anything.predictor_sammed import SammedPredictor
+from argparse import Namespace
 
 import warnings
 
@@ -46,10 +49,18 @@ class SAM_Segmentator:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         #Setup model
-        self.sam_checkpoint="sam_vit_b_01ec64.pth"
+        #self.sam_checkpoint="sam_vit_b_01ec64.pth"
+        self.sam_checkpoint="sam-med2d_b.pth"
         self.model_type="vit_b"
 
-        self.sam=sam_model_registry[self.model_type](checkpoint=self.sam_checkpoint)
+        #SAM-Med2D
+        args = Namespace()
+        args.image_size = 256
+        args.encoder_adapter = True
+        args.sam_checkpoint = self.sam_checkpoint
+        self.sam = sammed_model_registry[self.model_type](args).to(self.device)
+
+        #self.sam=sam_model_registry[self.model_type](checkpoint=self.sam_checkpoint)
         self.sam.to(device=self.device)
 
         #Setup the predictor
@@ -156,7 +167,7 @@ class SAM_Segmentator:
         self.resized_mask = cv2.resize(self.masks[0].astype(np.uint8), (self.image_shape[0], self.image_shape[1]), interpolation=cv2.INTER_NEAREST)
 
         #Find mask contours on specified mask
-        self.contours, self.hierarchy = cv2.findContours(self.resized_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        self.contours, self.hierarchy = cv2.findContours(self.masks[0].astype(np.uint8),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
         #Create an original image with mask border
         self.image_with_contours=self.image.copy()
