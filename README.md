@@ -31,7 +31,7 @@ Segmentator outputs:
 
 5. Install Tkinter
    ```bash
-  sudo apt install python3-tk
+   sudo apt install python3-tk
    
 
 ## Usage
