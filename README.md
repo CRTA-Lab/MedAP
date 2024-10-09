@@ -13,6 +13,11 @@ Segmentator outputs:
 
 ## Installation
 
+00. Setup CUDA and CUDNN
+   ```bash
+   https://developer.nvidia.com/cuda-toolkit
+   https://developer.nvidia.com/cudnn
+
 1. Clone the repo:
    ```bash
    git clone https://github.com/lukasiktar/SAM_segmentator.git
@@ -25,13 +30,21 @@ Segmentator outputs:
    ```bash
     https://github.com/opencv/opencv.git
 
-4. Build torch and torchvision from
+4. Build torch and torchvision from (it is reccomended to build from source with CUDA support for your CUDA version):
    ```bash
    https://pytorch.org/get-started/previous-versions/
 
 5. Install Tkinter
    ```bash
    sudo apt install python3-tk
+
+6. Install segment-anything and albumentations
+   ```bash
+   pip install segment-anything albumentations
+
+7. Download the repository and store it in the working directory:
+   ```bash
+   git clone https://github.com/OpenGVLab/SAM-Med2D.git
    
 
 ## Usage
