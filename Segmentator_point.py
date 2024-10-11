@@ -22,43 +22,28 @@ def segment_using_mouse(image_path,annotated_image_name):
 
     #Setup directory where annotations will be stored.
     directory = "AnnotatedDataset"
-    # Check if the directory already exists
     if not os.path.exists(directory):
-        # If it doesn't exist, create it
         os.makedirs(directory)
         print(f"Directory '{directory}' created.")
-    else:
-        print(f"Directory '{directory}' already exists.")
 
     #Setup folder where mask images will be stored.
     masks_directory="AnnotatedDataset/masks"
-    # Check if the directory already exists
     if not os.path.exists(masks_directory):
-        # If it doesn't exist, create it
         os.makedirs(masks_directory)
         print(f"Directory '{masks_directory}' created.")
-    else:
-        print(f"Directory '{masks_directory}' already exists.")
 
     #Stup folder where images with annotations will be stored.
     annotations_directory="AnnotatedDataset/annotations"
-    # Check if the directory already exists
     if not os.path.exists(annotations_directory):
-        # If it doesn't exist, create it
         os.makedirs(annotations_directory)
         print(f"Directory '{annotations_directory}' created.")
-    else:
-        print(f"Directory '{annotations_directory}' already exists.")
 
     #Setup where txt annotations will be stored.
     txt_directory="AnnotatedDataset/txt"
-    # Check if the directory already exists
     if not os.path.exists(txt_directory):
         # If it doesn't exist, create it
         os.makedirs(txt_directory)
         print(f"Directory '{txt_directory}' created.")
-    else:
-        print(f"Directory '{txt_directory}' already exists.")
 
     #Setup operating device
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -153,7 +138,6 @@ def segment_using_mouse(image_path,annotated_image_name):
     plt.show()
     plt.close()
     
-    #Print logs
     print(f"Mask saved at: {mask_save_path}")
     print(f"Annotated image saved at: {output_image_path}")
     print(f"YOLO annotation saved at: {annotation_save_path}")
