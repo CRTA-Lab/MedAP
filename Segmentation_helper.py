@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 #Functions that create masks/annotations on images
 def show_mask(mask, ax, random_color=False):
@@ -22,3 +23,7 @@ def show_box(box, ax):
     w, h = box[2] - box[0], box[3] - box[1]
     ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2))    
 
+def create_directory(name: str) -> None:
+    if not os.path.exists(name):
+        os.makedirs(name)
+        print(f'Directory {name} created.')

@@ -3,8 +3,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from segment_anything import sam_model_registry, SamPredictor
-import os
-from Segmentation_helper import show_mask,show_points
+from Segmentation_helper import show_mask, create_directory
 import warnings
 
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
@@ -19,37 +18,19 @@ def segment_using_rectangle(image_path,annotated_image_name):
     image_name=f"{annotated_image_name}.png"
     ####************ DEVELOPER STUFF ************######
 
-    #Setup directory where annotations will be stored.
-    directory = "AnnotatedDataset"
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-        print(f"Directory {directory} created.")
-    
+    # folder where annotations will be stored.
+    create_directory('AnnotatedDataset')
+    # folder where mask images will be stored.
+    create_directory('AnnotatedDataset/masks')
+    # folder where images with annotations will be stored.
+    create_directory('AnnotatedDataset/annotations')
+    # where txt annotations will be stored.
+    create_directory('AnnotatedDataset/txt')
 
-    #Setup folder where mask images will be stored.
-    masks_directory="AnnotatedDataset/masks"
-    
-    if not os.path.exists(masks_directory):
-        os.makedirs(masks_directory)
-        print(f"Directory {masks_directory} created.")
-
-    #Stup folder where images with annotations will be stored.
-    annotations_directory="AnnotatedDataset/annotations"
-    if not os.path.exists(annotations_directory):
-        os.makedirs(annotations_directory)
-        print(f"Directory {annotations_directory} created.")
-
-
-    #Setup where txt annotations will be stored.
-    txt_directory="AnnotatedDataset/txt"
-    if not os.path.exists(txt_directory):
-        os.makedirs(txt_directory)
-        print(f"Directory {txt_directory} created.")
-
-    #Setup operating device
+    # Setup operating device
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    #Setup SAM model
+    # Setup SAM model
     sam_checkpoint="./sam_vit_b_01ec64.pth"
     model_type="vit_b"
 
