@@ -1,9 +1,8 @@
 import torch
-import torchvision
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
+from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
 #Show annotations on images
 def show_anns(anns):

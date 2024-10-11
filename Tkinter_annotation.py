@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from tkinter import Tk, Button, Label, Canvas, filedialog, messagebox, simpledialog
+from tkinter import Tk, Label, Canvas, filedialog, messagebox, simpledialog
 from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
 
