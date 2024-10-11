@@ -1,11 +1,10 @@
 import cv2
 import torch
-import torchvision
 import numpy as np
 import matplotlib.pyplot as plt
 from segment_anything import sam_model_registry, SamPredictor
 import os
-from Segmentation_helper import show_box,show_mask,show_points
+from Segmentation_helper import show_mask,show_points
 import warnings
 
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
