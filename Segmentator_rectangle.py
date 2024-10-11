@@ -22,49 +22,36 @@ def segment_using_rectangle(image_path,annotated_image_name):
 
     #Setup directory where annotations will be stored.
     directory = "AnnotatedDataset"
-    # Check if the directory already exists
     if not os.path.exists(directory):
-        # If it doesn't exist, create it
         os.makedirs(directory)
-        print(f"Directory '{directory}' created.")
-    else:
-        print(f"Directory '{directory}' already exists.")
+        print(f"Directory {directory} created.")
+    
 
     #Setup folder where mask images will be stored.
     masks_directory="AnnotatedDataset/masks"
-    # Check if the directory already exists
+    
     if not os.path.exists(masks_directory):
-        # If it doesn't exist, create it
         os.makedirs(masks_directory)
-        print(f"Directory '{masks_directory}' created.")
-    else:
-        print(f"Directory '{masks_directory}' already exists.")
-        
+        print(f"Directory {masks_directory} created.")
+
     #Stup folder where images with annotations will be stored.
     annotations_directory="AnnotatedDataset/annotations"
-    # Check if the directory already exists
     if not os.path.exists(annotations_directory):
-        # If it doesn't exist, create it
         os.makedirs(annotations_directory)
-        print(f"Directory '{annotations_directory}' created.")
-    else:
-        print(f"Directory '{annotations_directory}' already exists.")
+        print(f"Directory {annotations_directory} created.")
+
 
     #Setup where txt annotations will be stored.
     txt_directory="AnnotatedDataset/txt"
-    # Check if the directory already exists
     if not os.path.exists(txt_directory):
-        # If it doesn't exist, create it
         os.makedirs(txt_directory)
-        print(f"Directory '{txt_directory}' created.")
-    else:
-        print(f"Directory '{txt_directory}' already exists.")
+        print(f"Directory {txt_directory} created.")
 
     #Setup operating device
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     #Setup SAM model
-    sam_checkpoint="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/sam_vit_b_01ec64.pth"
+    sam_checkpoint="./sam_vit_b_01ec64.pth"
     model_type="vit_b"
 
     sam=sam_model_registry[model_type](checkpoint=sam_checkpoint)
@@ -140,16 +127,16 @@ def segment_using_rectangle(image_path,annotated_image_name):
     yolo_annotation=f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n"
     
     #Store the txt annotation:
-    annotation_save_path=f"/home/istrazivac6/LukaSiktar/Ultralytics/SAM/AnnotatedDataset/txt/annotation{annotated_image_name}.txt"
+    annotation_save_path=f"./AnnotatedDataset/txt/annotation{annotated_image_name}.txt"
     with open(annotation_save_path, "w") as f:
         f.write(yolo_annotation)
 
     #Store the mask image:
-    mask_save_path=f"/home/istrazivac6/LukaSiktar/Ultralytics/SAM/AnnotatedDataset/masks/{annotated_image_name}_mask.png"
+    mask_save_path=f"./AnnotatedDataset/masks/{annotated_image_name}_mask.png"
     cv2.imwrite(mask_save_path, (masks[0] * 255).astype(np.uint8))
-    #Show and store annotated image:
-    output_image_path=f"/home/istrazivac6/LukaSiktar/Ultralytics/SAM/AnnotatedDataset/annotations/{image_name}"
 
+    #Show and store annotated image:
+    output_image_path=f"./AnnotatedDataset/annotations/{image_name}"
     plt.figure(figsize=(10,10))
     plt.imshow(image)
     show_mask(masks[0], plt.gca())
@@ -158,7 +145,7 @@ def segment_using_rectangle(image_path,annotated_image_name):
     plt.show()
     plt.close()
     
-    #Print logs
+
     print(f"Mask saved at: {mask_save_path}")
     print(f"Annotated image saved at: {output_image_path}")
     print(f"YOLO annotation saved at: {annotation_save_path}")
