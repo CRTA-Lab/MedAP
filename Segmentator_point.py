@@ -64,7 +64,7 @@ def segment_using_mouse(image_path,annotated_image_name):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     #Setup SAM model 
-    sam_checkpoint="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/sam_vit_b_01ec64.pth"
+    sam_checkpoint="./sam_vit_b_01ec64.pth"
     model_type="vit_b"
 
     sam=sam_model_registry[model_type](checkpoint=sam_checkpoint)
@@ -133,16 +133,16 @@ def segment_using_mouse(image_path,annotated_image_name):
     yolo_annotation=f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n"
 
     #Store the txt annotation:
-    annotation_save_path=f"/home/istrazivac6/LukaSiktar/Ultralytics/SAM/AnnotatedDataset/txt/annotation{annotated_image_name}.txt"
+    annotation_save_path=f"./AnnotatedDataset/txt/annotation{annotated_image_name}.txt"
     with open(annotation_save_path, "w") as f:
         f.write(yolo_annotation)
 
     #Store the mask image:
-    mask_save_path=f"/home/istrazivac6/LukaSiktar/Ultralytics/SAM/AnnotatedDataset/masks/{annotated_image_name}_mask.png"
+    mask_save_path=f"./AnnotatedDataset/masks/{annotated_image_name}_mask.png"
     cv2.imwrite(mask_save_path, (masks[0] * 255).astype(np.uint8))
 
     #Show and store annotated image:
-    output_image_path=f"/home/istrazivac6/LukaSiktar/Ultralytics/SAM/AnnotatedDataset/annotations/{image_name}"
+    output_image_path=f"./AnnotatedDataset/annotations/{image_name}"
 
     plt.figure(figsize=(10,10))
     plt.imshow(image)
