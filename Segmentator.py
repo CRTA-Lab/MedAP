@@ -2,17 +2,13 @@ import os
 import cv2
 
 import torch
-import torchvision
 
 import numpy as np
-import matplotlib.pyplot as plt
 
-from segment_anything import sam_model_registry, SamPredictor
+from segment_anything import SamPredictor
 from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
-from SAM_Med2D.segment_anything.predictor_sammed import SammedPredictor
 from argparse import Namespace
 
-import warnings
 
 #Segmentator class
 class SAM_Segmentator:
