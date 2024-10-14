@@ -88,16 +88,13 @@ class SAM_Segmentator:
 
     #Function to setup the directories to store the annotation results
     def setup_directories(self):
-        #Setup directory
+        # Setup directory
         create_directory('AnnotatedDataset')
-
-        #Masks
+        # Masks
         create_directory('AnnotatedDataset/masks')
-        
-        #Annotations
+        # Annotations
         create_directory('AnnotatedDataset/annotations')
-        
-        #Txt files
+        # Txt files
         create_directory('AnnotatedDataset/txt')
         
     #Function to perform prediction on the specified image
@@ -172,6 +169,3 @@ class SAM_Segmentator:
         cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
 
         self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
-
-        
-        
