@@ -106,15 +106,13 @@ class ImageEditor:
      #Zoom in method
      def zoom_in(self):
         """Zoom in by increasing the zoom factor."""
-        if self.zoom_factor < self.max_zoom:
-            self.zoom_factor += 0.1
+        self.zoom_factor = min(self.zoom_factor+0.1,self.max_zoom)
         self.update_canvas()
 
      #Zoom out method
      def zoom_out(self):
         """Zoom out by decreasing the zoom factor."""
-        if self.zoom_factor > self.min_zoom:
-            self.zoom_factor -= 0.1
+        self.zoom_factor = max(self.zoom_factor-0.1, self.min_zoom)
         self.update_canvas()
 
      #Define point prompt method
