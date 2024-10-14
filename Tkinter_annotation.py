@@ -22,7 +22,8 @@ class ImageEditor:
           #The name specified from set of data created using SAM
           self.file_name=None
           #Zoom factors
-          self.zoom_factor = 1.0
+          self.zoom_value = 1.0
+          self.zoom_factor = 0.1
           self.min_zoom = 0.5
           self.max_zoom = 5.0
           #Original image dimensions
@@ -100,19 +101,19 @@ class ImageEditor:
             self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
             #Copy the original image
             self.original_image=self.image.copy()
-            self.zoom_factor=1.0
+            self.zoom_value=1.0
             self.update_canvas()
      
      #Zoom in method
      def zoom_in(self):
         """Zoom in by increasing the zoom factor."""
-        self.zoom_factor = min(self.zoom_factor+0.1,self.max_zoom)
+        self.zoom_value = min(self.zoom_value + self.zoom_factor, self.max_zoom)
         self.update_canvas()
 
      #Zoom out method
      def zoom_out(self):
         """Zoom out by decreasing the zoom factor."""
-        self.zoom_factor = max(self.zoom_factor-0.1, self.min_zoom)
+        self.zoom_value = max(self.zoom_value - self.zoom_factor, self.min_zoom)
         self.update_canvas()
 
      #Define point prompt method
@@ -151,8 +152,8 @@ class ImageEditor:
      def update_canvas(self, crosshair=None):
          if self.image is not None:
                 # Resize the image based on the zoom factor
-               zoomed_width = int(self.image.shape[1] * self.zoom_factor)
-               zoomed_height = int(self.image.shape[0] * self.zoom_factor)
+               zoomed_width = int(self.image.shape[1] * self.zoom_value)
+               zoomed_height = int(self.image.shape[0] * self.zoom_value)
                self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
 
                #Display image
