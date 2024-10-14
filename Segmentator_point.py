@@ -9,7 +9,7 @@ import warnings
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
 
 #Function to segment the object using mouse and single point
-def segment_using_mouse(image_path,annotated_image_name):
+def segment_using_mouse(image_path: str, annotated_image_name: str) -> None:
     #Setup image:
     image=cv2.imread(image_path)
     #Convert image color to RGB:
@@ -28,7 +28,7 @@ def segment_using_mouse(image_path,annotated_image_name):
     create_directory('AnnotatedDataset/txt')
 
     #Setup operating device
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
     #Setup SAM model 
     sam_checkpoint="./sam_vit_b_01ec64.pth"
@@ -48,7 +48,7 @@ def segment_using_mouse(image_path,annotated_image_name):
     input_label = np.array([1])
 
     #Callback function that will be triggered on mouse events
-    def mouse_callback(event, x,y, flags, param):
+    def mouse_callback(event, x,y, flags, param) -> None:
         nonlocal input_point
         #Check if the event was left button
         if event==cv2.EVENT_LBUTTONDOWN:
@@ -85,8 +85,8 @@ def segment_using_mouse(image_path,annotated_image_name):
     )
 
     #Create YOLO-compatible annotation
-    h,w =masks[0].shape
-    y,x =np.where(masks[0]>0)
+    h,w = masks[0].shape
+    y,x = np.where(masks[0]>0)
     x_min, x_max = x.min(), x.max()
     y_min, y_max = y.min(), y.max()
 

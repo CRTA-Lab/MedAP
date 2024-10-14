@@ -5,7 +5,7 @@ import cv2
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
 #Show annotations on images
-def show_anns(anns):
+def show_anns(anns) -> None:
     if len(anns) == 0:
         return
     sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
@@ -22,12 +22,12 @@ def show_anns(anns):
 
 
 
-sam_checkpoint="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/sam_vit_b_01ec64.pth"
-model_type="vit_b"
+sam_checkpoint: str ="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/sam_vit_b_01ec64.pth"
+model_type: str ="vit_b"
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-sam=sam_model_registry[model_type](checkpoint=sam_checkpoint)
+sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
 
 mask_generator=SamAutomaticMaskGenerator(model=sam,
@@ -39,10 +39,10 @@ mask_generator=SamAutomaticMaskGenerator(model=sam,
                                         crop_n_points_downscale_factor=2,
                                         min_mask_region_area=200)
 
-image_path="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/dogs.jpg"
-image=cv2.imread(image_path)
+image_path: str ="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/dogs.jpg"
+image = cv2.imread(image_path)
 
-masks=mask_generator.generate(image=image)
+masks = mask_generator.generate(image=image)
 
 print(len(masks))
 print(masks[0].keys())

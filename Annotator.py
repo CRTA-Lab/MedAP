@@ -1,7 +1,7 @@
-rectangle = input('Segment with rectangle? (y/n): ').lower() == 'y'
+rectangle: bool = input('Segment with rectangle? (y/n): ').lower() == 'y'
 
-image = 'car.png'
-annon_image = '001'
+image: str = 'car.png'
+annon_image: str = '001'
 
 if rectangle:
     from Segmentator_point import segment_using_mouse

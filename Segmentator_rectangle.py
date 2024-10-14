@@ -9,13 +9,13 @@ import warnings
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
 
 #Function to segment the object using bounding box
-def segment_using_rectangle(image_path,annotated_image_name):
+def segment_using_rectangle(image_path,annotated_image_name) -> None:
     #Setup image:
-    image=cv2.imread(image_path)
+    image = cv2.imread(image_path)
     #Convert image color to RGB:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     #Store image name:
-    image_name=f"{annotated_image_name}.png"
+    image_name = f"{annotated_image_name}.png"
     ####************ DEVELOPER STUFF ************######
 
     # folder where annotations will be stored.
@@ -28,13 +28,13 @@ def segment_using_rectangle(image_path,annotated_image_name):
     create_directory('AnnotatedDataset/txt')
 
     # Setup operating device
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Setup SAM model
-    sam_checkpoint="./sam_vit_b_01ec64.pth"
-    model_type="vit_b"
+    sam_checkpoint: str = "./sam_vit_b_01ec64.pth"
+    model_type: str = "vit_b"
 
-    sam=sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     sam.to(device=device)
 
     #Set the SAM Predictor
@@ -48,7 +48,7 @@ def segment_using_rectangle(image_path,annotated_image_name):
     input_label = np.array([1])
 
     #Callback function that will be triggered on mouse events
-    def mouse_callback(event, x,y, flags, param):
+    def mouse_callback(event, x,y, flags, param) -> None:
         nonlocal input_point
         global start_point
         #Check if the event was left button
@@ -92,8 +92,8 @@ def segment_using_rectangle(image_path,annotated_image_name):
     )
 
     #Create YOLO-compatible annotation
-    h,w =masks[0].shape
-    y,x =np.where(masks[0]>0)
+    h,w = masks[0].shape
+    y,x = np.where(masks[0]>0)
     x_min, x_max = x.min(), x.max()
     y_min, y_max = y.min(), y.max()
 
