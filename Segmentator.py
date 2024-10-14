@@ -9,6 +9,8 @@ from segment_anything import SamPredictor
 from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
 from argparse import Namespace
 
+from Segmentation_helper import create_directory
+
 
 #Segmentator class
 class SAM_Segmentator:
@@ -87,46 +89,21 @@ class SAM_Segmentator:
     #Function to setup the directories to store the annotation results
     def setup_directories(self):
         #Setup directory
-        directory = "AnnotatedDataset"
+        create_directory('AnnotatedDataset')
 
-        # Check if the directory already exists
-        if not os.path.exists(directory):
-            # If it doesn't exist, create it
-            os.makedirs(directory)
-            print(f"Directory '{directory}' created.")
-        else:
-            print(f"Directory '{directory}' already exists.")
         #Masks
-        masks_directory="AnnotatedDataset/masks"
-        # Check if the directory already exists
-        if not os.path.exists(masks_directory):
-            # If it doesn't exist, create it
-            os.makedirs(masks_directory)
-            print(f"Directory '{masks_directory}' created.")
-        else:
-            print(f"Directory '{masks_directory}' already exists.")
+        create_directory('AnnotatedDataset/masks')
+        
         #Annotations
-        annotations_directory="AnnotatedDataset/annotations"
-        # Check if the directory already exists
-        if not os.path.exists(annotations_directory):
-            # If it doesn't exist, create it
-            os.makedirs(annotations_directory)
-            print(f"Directory '{annotations_directory}' created.")
-        else:
-            print(f"Directory '{annotations_directory}' already exists.")
+        create_directory('AnnotatedDataset/annotations')
+        
         #Txt files
-        txt_directory="AnnotatedDataset/txt"
-        # Check if the directory already exists
-        if not os.path.exists(txt_directory):
-            # If it doesn't exist, create it
-            os.makedirs(txt_directory)
-            print(f"Directory '{txt_directory}' created.")
-        else:
-            print(f"Directory '{txt_directory}' already exists.")
-    
+        create_directory('AnnotatedDataset/txt')
+        
     #Function to perform prediction on the specified image
-    def predict(self):
-         #Predict the object
+    def predict(self) -> None:
+        
+        #Predict the object
         if self.prompt_state=="Box":
             self.masks, self.scores, self.logits = self.predictor.predict(
                 point_coords=None,
@@ -141,7 +118,8 @@ class SAM_Segmentator:
                 multimask_output=False,
             )
         
-    def save_preditction(self):
+    def save_preditction(self) -> None:
+
         #Create YOLO-compatible annotation
         h,w =self.masks[0].shape
         y,x =np.where(self.masks[0]>0)
@@ -181,7 +159,7 @@ class SAM_Segmentator:
         self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
 
     #Function that removes the part of the mask that is specified using bounding box
-    def edit_segmentation(self, rect_start, rect_end):
+    def edit_segmentation(self, rect_start, rect_end) -> None:
         self.rect_start=rect_start
         self.rect_end=rect_end
         self.resized_mask[self.rect_start[1]:self.rect_end[1], self.rect_start[0]:self.rect_end[0]]=0
