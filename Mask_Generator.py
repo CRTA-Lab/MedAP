@@ -22,7 +22,7 @@ def show_anns(anns) -> None:
 
 
 
-sam_checkpoint: str ="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/sam_vit_b_01ec64.pth"
+sam_checkpoint: str ="./sam_vit_b_01ec64.pth"
 model_type: str ="vit_b"
 
 device: str = "cuda" if torch.cuda.is_available() else "cpu"
@@ -39,7 +39,7 @@ mask_generator=SamAutomaticMaskGenerator(model=sam,
                                         crop_n_points_downscale_factor=2,
                                         min_mask_region_area=200)
 
-image_path: str ="/home/istrazivac6/LukaSiktar/Ultralytics/SAM/dogs.jpg"
+image_path: str ="./images/dogs.jpg"
 image = cv2.imread(image_path)
 
 masks = mask_generator.generate(image=image)
