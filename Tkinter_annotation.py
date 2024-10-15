@@ -5,12 +5,13 @@ from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
 
 from Segmentator import SAM_Segmentator
+from constants import *
 
 class ImageEditor:
      def __init__(self, root):
           self.root=root
           self.root.title("Image Editor")
-          self.root.configure(bg='#2E2E2E')
+          self.root.configure(bg=COLOUR_ROOT_BG)
 
           #Initialize variables
           self.image=None          #Loaded image (Image that is used to show created boxes)
@@ -22,10 +23,10 @@ class ImageEditor:
           #The name specified from set of data created using SAM
           self.file_name=None
           #Zoom factors
-          self.zoom_value = 1.0
-          self.zoom_factor = 0.1
-          self.min_zoom = 0.5
-          self.max_zoom = 5.0
+          self.zoom_value = ZOOM_VALUE
+          self.zoom_factor = ZOOM_FACTOR
+          self.min_zoom = ZOOM_MIN
+          self.max_zoom = ZOOM_MAX
           #Original image dimensions
           self.image_shape=None
           #Prompt state
@@ -34,11 +35,11 @@ class ImageEditor:
           #Styling settings for Tkinter
           style = ttk.Style()
           style.theme_use('alt')  # Use a theme that supports customization
-          style.configure('TButton', background='#444444', foreground='white', font=('Helvetica', 10), padding=6)
-          style.map('TButton', background=[('active', '#555555')])
+          style.configure('TButton', background=COLOUR_TBUTTON_BG, foreground=COLOUR_TBUTTON_FG, font=('Helvetica', 10), padding=6)
+          style.map('TButton', background=[('active', COLOUR_TBUTTON_BG_ACTIVE)])
 
           #Create GUI elements
-          self.canvas=Canvas(root, width=1200, height=800,  bg='#1E1E1E',highlightthickness=0)
+          self.canvas=Canvas(root, width=1200, height=800,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
           self.canvas.pack(side="left", padx=10, pady=20)  # Position the canvas on the left side
 
           # Create a frame for the buttons on the right side
@@ -81,7 +82,7 @@ class ImageEditor:
           self.save_mask.grid(row=1, column=1, padx=10, sticky="ew")
 
           # Bind mouse events for rectangle drawing (unchanged)
-          self.canvas1 = Canvas(root, width=500, height=500, bg='white')
+          self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
           self.canvas.bind("<Button-1>", self.on_mouse_down)
           self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
           self.canvas.bind("<ButtonRelease-1>", self.on_mouse_up)
@@ -171,14 +172,14 @@ class ImageEditor:
                if self.rect_start and self.rect_end:
                     x1,y1 = self.rect_start
                     x2,y2 = self.rect_end
-                    self.canvas.create_rectangle(x1+self.x,y1+self.y,x2+self.x,y2+self.y, outline="red", width=2)
+                    self.canvas.create_rectangle(x1+self.x,y1+self.y,x2+self.x,y2+self.y, outline=COLOUR_BOX_OUTLINE, width=2)
                #Display the cross for easier annotation
                if crosshair:
                     cx,cy=crosshair
                     canvas_width=self.canvas.winfo_width()
                     canvas_height=self.canvas.winfo_height()
-                    self.canvas.create_line(0+self.x, cy+self.y, canvas_width+cx+self.x, cy+self.y, fill="white", dash=(2,2))
-                    self.canvas.create_line(cx+self.x, 0+self.y, cx+self.x, canvas_height+cy+self.y, fill="white", dash=(2,2))
+                    self.canvas.create_line(0+self.x, cy+self.y, canvas_width+cx+self.x, cy+self.y, fill=COLOUR_LINE, dash=(2,2))
+                    self.canvas.create_line(cx+self.x, 0+self.y, cx+self.x, canvas_height+cy+self.y, fill=COLOUR_LINE, dash=(2,2))
 
      #Update canvas with annotated image
      def update_canvas_annotated_image(self):
