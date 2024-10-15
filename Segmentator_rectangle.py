@@ -6,6 +6,9 @@ from segment_anything import sam_model_registry, SamPredictor
 from Segmentation_helper import show_mask, create_directory
 import warnings
 
+# import constants
+from constants import *
+
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
 
 #Function to segment the object using bounding box
@@ -18,16 +21,16 @@ def segment_using_rectangle(image_path,annotated_image_name) -> None:
     image_name = f"{annotated_image_name}.png"
     ####************ DEVELOPER STUFF ************######
 
-    # folder where annotations will be stored.
-    create_directory('AnnotatedDataset')
-    # folder where mask images will be stored.
-    create_directory('AnnotatedDataset/masks')
-    # folder where images with annotations will be stored.
-    create_directory('AnnotatedDataset/annotations')
-    # where txt annotations will be stored.
-    create_directory('AnnotatedDataset/txt')
+    # annotations
+    create_directory(FOLDER_ANNOTATED)
+    # masks
+    create_directory(FOLDER_MASKS)
+    # images with annotations
+    create_directory(FOLDER_ANNOTATIONS)
+    # txt annotations
+    create_directory(FOLDER_TXT)
 
-    # Setup operating device
+    # if cuda is available, use gpu
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Setup SAM model
@@ -72,8 +75,8 @@ def segment_using_rectangle(image_path,annotated_image_name) -> None:
         cv2.imshow('Image', image)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # Wait for the 'q' key to be pressed to exit
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # user can exit the program by pressing the 'BUTTON_EXIT'
+        if cv2.waitKey(1) & 0xFF == ord(BUTTON_EXIT):
             break
 
     # Destroy all the windows created
@@ -107,16 +110,16 @@ def segment_using_rectangle(image_path,annotated_image_name) -> None:
     yolo_annotation=f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n"
     
     #Store the txt annotation:
-    annotation_save_path=f"./AnnotatedDataset/txt/annotation{annotated_image_name}.txt"
+    annotation_save_path=f"{FOLDER_TXT}/annotation{annotated_image_name}.txt"
     with open(annotation_save_path, "w") as f:
         f.write(yolo_annotation)
 
     #Store the mask image:
-    mask_save_path=f"./AnnotatedDataset/masks/{annotated_image_name}_mask.png"
+    mask_save_path=f"{FOLDER_MASKS}/{annotated_image_name}_mask.png"
     cv2.imwrite(mask_save_path, (masks[0] * 255).astype(np.uint8))
 
     #Show and store annotated image:
-    output_image_path=f"./AnnotatedDataset/annotations/{image_name}"
+    output_image_path=f"{FOLDER_ANNOTATIONS}/{image_name}"
     plt.figure(figsize=(10,10))
     plt.imshow(image)
     show_mask(masks[0], plt.gca())
