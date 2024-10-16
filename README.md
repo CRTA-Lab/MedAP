@@ -13,7 +13,7 @@ Segmentator outputs:
 
 ## Installation
 
-00. Setup CUDA and CUDNN
+0. Setup CUDA and CUDNN
    ```bash
    https://developer.nvidia.com/cuda-toolkit
    https://developer.nvidia.com/cudnn
