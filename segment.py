@@ -143,7 +143,8 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
     plt.figure(figsize=(10,10))
     plt.imshow(image)
     show_mask(masks[0], plt.gca())
-    show_points(input_point, input_label, plt.gca())
+    if shape_type == Shape.POINT:
+        show_points(input_point, input_label, plt.gca())
     plt.axis('off')
     plt.savefig(output_image_path, bbox_inches='tight')
     plt.show()
