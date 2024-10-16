@@ -11,26 +11,26 @@ from Shape import Shape
 
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
 
-#Function to segment the object using mouse and single point
 def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape = Shape.RECTANGLE) -> None:
-    #Setup image:
-    image = cv2.imread(image_path)
-    #Convert image color to RGB:
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    #Store image name:
-    image_name = f"{annotated_image_name}.png"
-    ####************ DEVELOPER STUFF ************######
+    '''
+    Segments the image by giving it a shape to segment.
+    
+    Args:
+        image_path (str): Path to image to segment.
+        annotated_image_name (str): Name of the annotated image without the sufix.
+        shape_type (Shape): Shape used to mark the part of the image the user wants to segment.
+    '''
 
-    # annotations
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert color to RGB
+    image_name = f"{annotated_image_name}.png"
+
     create_directory(FOLDER_ANNOTATED)
-    # masks
     create_directory(FOLDER_MASKS)
-    # images with annotations
     create_directory(FOLDER_ANNOTATIONS)
-    # txt annotations
     create_directory(FOLDER_TXT)
 
-    # if cuda is available, use gpu
+    # if cuda is not available, use cpu
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Setup SAM model
@@ -80,7 +80,6 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
         cv2.setMouseCallback("Image", mouse_callback_point)
 
     while True:
-        # Display the image
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         cv2.imshow('Image', image)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -89,10 +88,8 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
         if cv2.waitKey(1) & 0xFF == ord(BUTTON_EXIT):
             break
 
-    # Destroy all the windows created
     cv2.destroyAllWindows()
 
-    # The coordinates of the point can be accessed using the 'input_point' array
     print(f"Coordinates of the selected point: {input_point}")
 
 
@@ -128,23 +125,24 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
     class_id=0
     yolo_annotation=f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n"
 
-    # Store the txt annotation:
+    # Store information
+
     annotation_save_path=f"{FOLDER_TXT}/annotation{annotated_image_name}.txt"
     with open(annotation_save_path, "w") as f:
         f.write(yolo_annotation)
 
-    # Store the mask image:
     mask_save_path=f"{FOLDER_MASKS}/{annotated_image_name}_mask.png"
     cv2.imwrite(mask_save_path, (masks[0] * 255).astype(np.uint8))
 
-    # Show and store annotated image:
     output_image_path=f"{FOLDER_ANNOTATIONS}/{image_name}"
 
     plt.figure(figsize=(10,10))
     plt.imshow(image)
     show_mask(masks[0], plt.gca())
+    
     if shape_type == Shape.POINT:
         show_points(input_point, input_label, plt.gca())
+
     plt.axis('off')
     plt.savefig(output_image_path, bbox_inches='tight')
     plt.show()
