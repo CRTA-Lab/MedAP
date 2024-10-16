@@ -7,11 +7,12 @@ from Segmentation_helper import show_mask, show_points, create_directory
 import warnings
 
 from constants import *
+from Shape import Shape
 
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
 
 #Function to segment the object using mouse and single point
-def segment_using_mouse(image_path: str, annotated_image_name: str) -> None:
+def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape = Shape.RECTANGLE) -> None:
     #Setup image:
     image = cv2.imread(image_path)
     #Convert image color to RGB:
@@ -49,8 +50,8 @@ def segment_using_mouse(image_path: str, annotated_image_name: str) -> None:
     input_point = np.array([[None, None]])
     input_label = np.array([1])
 
-    # Callback function that will be triggered on mouse events
-    def mouse_callback(event, x,y, flags, param) -> None:
+    # Callback function depends on the shape used for marking
+    def mouse_callback_point(event, x, y, flags, param) -> None:
         nonlocal input_point
         # Check if the event was left button
         if event==cv2.EVENT_LBUTTONDOWN:
@@ -58,9 +59,25 @@ def segment_using_mouse(image_path: str, annotated_image_name: str) -> None:
             input_point=np.array([[x,y]])
             print(f"Point selected: {input_point}")
 
+    def mouse_callback_rectangle(event, x, y, flags, param) -> None:
+        nonlocal input_point
+        global start_point
+        # Check if the event was left button
+        if event==cv2.EVENT_LBUTTONDOWN:
+            # Store the coordinates in the list
+            start_point=(x,y)
+        if event==cv2.EVENT_LBUTTONUP:
+            # Store the coordinated in the list
+            end_point=(x,y)
+            input_point=np.array([[start_point[0], start_point[1],end_point[0], end_point[1]]])
+            print(input_point)
+
     # Create a window and set the mouse callback function to capture the click event
     cv2.namedWindow("Image")
-    cv2.setMouseCallback("Image", mouse_callback)
+    if shape_type == Shape.RECTANGLE:
+        cv2.setMouseCallback("Image", mouse_callback_rectangle)
+    elif shape_type == Shape.POINT:
+        cv2.setMouseCallback("Image", mouse_callback_point)
 
     while True:
         # Display the image
@@ -79,12 +96,22 @@ def segment_using_mouse(image_path: str, annotated_image_name: str) -> None:
     print(f"Coordinates of the selected point: {input_point}")
 
 
-    # Predict the object using created points using mouse
-    masks, scores, logits = predictor.predict(
-        point_coords=input_point,
-        point_labels=input_label,
-        multimask_output=False,
-    )
+    if shape_type == Shape.POINT:
+        # Predict the object using created points using mouse
+        masks, scores, logits = predictor.predict(
+            point_coords=input_point,
+            point_labels=input_label,
+            multimask_output=False,
+        )
+
+    elif shape_type == Shape.RECTANGLE:
+        # Predict the object using created bounding box
+        masks, scores, logits = predictor.predict(
+            point_coords=None,
+            point_labels=None,
+            box=input_point[None, :],
+            multimask_output=False,
+        )
 
     # Create YOLO-compatible annotation
     h,w = masks[0].shape
