@@ -1,8 +1,5 @@
-import os
 import cv2
-
 import torch
-
 import numpy as np
 
 from segment_anything import SamPredictor
@@ -40,10 +37,10 @@ class SAM_Segmentator:
         self.prompt_state=prompt_state
         ####************ DEVELOPER STUFF ************######
 
-        #Function to setup the directories to store the annotation results
+        # Function to setup the directories to store the annotation results
         self.setup_directories()
 
-        #Setup the device
+        # if cuda is not available, use cpu
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         #Setup model
@@ -80,27 +77,27 @@ class SAM_Segmentator:
         #Perform the prediction on specified image
         self.predict()
 
-        #Save the predicitons
-        self.save_preditction()
+        #Save the predictions
+        self.save_prediction()
         
         self.semgentation_successful=True
         
 
-    #Function to setup the directories to store the annotation results
-    def setup_directories(self):
-        # Setup directory
+    def setup_directories(self) -> None:
+        '''
+        Creates directories needed for setup, masks, annotations
+        and txt files.
+        '''
         create_directory('AnnotatedDataset')
-        # Masks
         create_directory('AnnotatedDataset/masks')
-        # Annotations
         create_directory('AnnotatedDataset/annotations')
-        # Txt files
         create_directory('AnnotatedDataset/txt')
         
-    #Function to perform prediction on the specified image
     def predict(self) -> None:
+        '''
+        Performs prediction on the specified image.
+        '''
         
-        #Predict the object
         if self.prompt_state=="Box":
             self.masks, self.scores, self.logits = self.predictor.predict(
                 point_coords=None,
@@ -108,6 +105,7 @@ class SAM_Segmentator:
                 box=self.input_point[None, :],
                 multimask_output=False,
             )
+
         elif self.prompt_state=="Point":
             self.masks, self.scores, self.logits = self.predictor.predict(
                 point_coords=self.input_point,
@@ -115,7 +113,7 @@ class SAM_Segmentator:
                 multimask_output=False,
             )
         
-    def save_preditction(self) -> None:
+    def save_prediction(self) -> None:
 
         #Create YOLO-compatible annotation
         h,w =self.masks[0].shape
