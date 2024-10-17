@@ -111,30 +111,31 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
         )
 
     # Create YOLO-compatible annotation
-    h,w = masks[0].shape
-    y,x = np.where(masks[0]>0)
+    h, w = masks[0].shape
+    #y,x = np.where(masks[0]>0)
+    y, x = np.nonzero(masks[0]>0)
     x_min, x_max = x.min(), x.max()
     y_min, y_max = y.min(), y.max()
 
     # YOLO format: class_id x_center  y_center width height (normalized)
-    x_center=(x_min+x_max)/2.0/w
-    y_center=(y_min+y_max)/2.0/h
-    bbox_width=(x_max-x_min)/w
-    bbox_height=(y_max-y_min)/h
+    x_center = (x_min+x_max) / 2.0 / w
+    y_center = (y_min+y_max) / 2.0 / h
+    bbox_width = (x_max-x_min) / w
+    bbox_height = (y_max-y_min) / h
 
-    class_id=0
-    yolo_annotation=f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n"
+    class_id = 0
+    yolo_annotation = f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n"
 
     # Store information
 
-    annotation_save_path=f"{FOLDER_TXT}/annotation{annotated_image_name}.txt"
+    annotation_save_path = f"{FOLDER_TXT}/annotation{annotated_image_name}.txt"
     with open(annotation_save_path, "w") as f:
         f.write(yolo_annotation)
 
-    mask_save_path=f"{FOLDER_MASKS}/{annotated_image_name}_mask.png"
+    mask_save_path = f"{FOLDER_MASKS}/{annotated_image_name}_mask.png"
     cv2.imwrite(mask_save_path, (masks[0] * 255).astype(np.uint8))
 
-    output_image_path=f"{FOLDER_ANNOTATIONS}/{image_name}"
+    output_image_path = f"{FOLDER_ANNOTATIONS}/{image_name}"
 
     plt.figure(figsize=(10,10))
     plt.imshow(image)
