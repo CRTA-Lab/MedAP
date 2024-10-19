@@ -46,18 +46,26 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
     # Process image to produce image embedding that will be used for mask prediction
     predictor.set_image(image)
 
-    # Set the point on the object you want to detect
-    input_point = np.array([[None, None]])
-    input_label = np.array([1])
 
     # Callback function depends on the shape used for marking
     def mouse_callback_point(event, x, y, flags, param) -> None:
         nonlocal input_point
+        nonlocal input_label
         # Check if the event was left button
         if event==cv2.EVENT_LBUTTONDOWN:
-            # Store the coordinates in the list
-            input_point=np.array([[x,y]])
-            print(f"Point selected: {input_point}")
+            # Store the positive coordinates in the list
+            point=[x,y]
+            input_point= np.append(input_point,[point], axis=0)
+            input_label = np.append(input_label, [1],axis=0)
+            print(f"Points selected: {input_point}")
+            print(f"Labels: {input_label}")
+        if event==cv2.EVENT_RBUTTONDOWN:
+            # Store the negative coordinates in the list
+            point=[x,y]
+            input_point = np.append(input_point,[point], axis=0)
+            input_label = np.append(input_label, [0],axis=0)
+            print(f"Points selected: {input_point}")
+            print(f"Labels: {input_label}")
 
     def mouse_callback_rectangle(event, x, y, flags, param) -> None:
         nonlocal input_point
@@ -75,8 +83,12 @@ def segment_image(image_path: str, annotated_image_name: str, shape_type: Shape 
     # Create a window and set the mouse callback function to capture the click event
     cv2.namedWindow("Image")
     if shape_type == Shape.RECTANGLE:
+        input_point = np.array([[None, None]])
+        input_label = np.array([1])
         cv2.setMouseCallback("Image", mouse_callback_rectangle)
     elif shape_type == Shape.POINT:
+        input_point = np.empty((0, 2))
+        input_label = np.empty((0,))
         cv2.setMouseCallback("Image", mouse_callback_point)
 
     while True:
