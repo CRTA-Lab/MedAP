@@ -31,6 +31,8 @@ class ImageEditor:
           self.image_shape=None
           #Prompt state
           self.prompt_state=None
+          #Initialize query box
+          self.query_box=None
           
           #Styling settings for Tkinter
           style = ttk.Style()
@@ -65,21 +67,30 @@ class ImageEditor:
           second_frame = ttk.Frame(button_frame)
           second_frame.grid(row=5, column=0, pady=20, sticky="ew")
 
-          # Group 2: Zoom controls (Zoom In, Zoom Out)
+          # Group 2: 
+          # Select point or box controls
+          self.point_button = ttk.Button(second_frame, text="Point", command=self.set_point_prompt, style='TButton')
+          self.box_button = ttk.Button(second_frame, text="Box", command=self.set_box_prompt, style='TButton')
+
+          # Arrange zoom buttons horizontally
+          self.point_button.grid(row=0, column=0, padx=10, pady=20, sticky="ew")
+          self.box_button.grid(row=0, column=1, padx=10, pady=20, sticky="ew")
+
+          # Zoom controls (Zoom In, Zoom Out)
           self.zoom_in_button = ttk.Button(second_frame, text="Zoom In", command=self.zoom_in, style='TButton')
           self.zoom_out_button = ttk.Button(second_frame, text="Zoom Out", command=self.zoom_out, style='TButton')
 
           # Arrange zoom buttons horizontally
-          self.zoom_in_button.grid(row=0, column=0, padx=10, pady=20, sticky="ew")
-          self.zoom_out_button.grid(row=0, column=1, padx=10, pady=20, sticky="ew")
+          self.zoom_in_button.grid(row=1, column=0, padx=10, pady=20, sticky="ew")
+          self.zoom_out_button.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
 
-          # Other controls
-          self.edit_mask = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
-          self.save_mask = ttk.Button(second_frame, text="Save Mask",command=self.save_mask, style="TButton")
+          # Mask edit controls
+          self.edit_mask_button = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
+          self.save_mask_button = ttk.Button(second_frame, text="Save Mask",command=self.save_mask, style="TButton")
 
-          # Arrange input controll buttons horizontally
-          self.edit_mask.grid(row=1, column=0, padx=10, sticky="ew")
-          self.save_mask.grid(row=1, column=1, padx=10, sticky="ew")
+          # Arrrange mask control buttons
+          self.edit_mask_button.grid(row=2, column=0, padx=10, sticky="ew")
+          self.save_mask_button.grid(row=2, column=1, padx=10, sticky="ew")
 
           # Bind mouse events for rectangle drawing (unchanged)
           self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
@@ -87,6 +98,8 @@ class ImageEditor:
           self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
           self.canvas.bind("<ButtonRelease-1>", self.on_mouse_up)
           self.canvas.bind("<Motion>", self.on_mouse_move)  
+          self.canvas.bind("<Button-3>", self.on_mouse2_down)
+          self.canvas.bind("<ButtonRelease-3>", self.on_mouse2_up)
 
 
      #Method that loads image file
@@ -95,15 +108,19 @@ class ImageEditor:
         self.file_name=file_path.split("/")[-1]   #Store the file name of image
         self.root.title(self.file_name)
         if file_path:
-            #Load image with OpenCV
-            self.image=cv2.imread(file_path)
-            self.image=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-            #Store the original image shape
-            self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
-            #Copy the original image
-            self.original_image=self.image.copy()
-            self.zoom_value=1.0
-            self.update_canvas()
+               #Load image with OpenCV
+               self.image=cv2.imread(file_path)
+               self.image=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+               #Store the original image shape
+               self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
+               #Copy the original image
+               self.original_image=self.image.copy()
+               self.zoom_value=1.0
+               self.update_canvas()
+
+               #Load arrays that are used if points are used
+               self.input_point = np.empty((0, 2))
+               self.input_label = np.empty((0,))
      
      #Zoom in method
      def zoom_in(self):
@@ -141,13 +158,39 @@ class ImageEditor:
 
      def on_mouse_up(self, event):
          if self.rect_start:
-              self.rect_end=(event.x-self.x, event.y-self.y)
-              #self.draw_rectangle()
+               self.rect_end=(event.x-self.x, event.y-self.y)
+               if self.rect_start == self.rect_end:
+                    self.input_point = np.append(self.input_point,[self.rect_start], axis=0)
+                    self.input_label = np.append(self.input_label, [1], axis=0)
+               else:
+                    self.input_point = np.append(self.input_point,[self.rect_start, self.rect_end], axis=0)
+                    self.input_label = np.append(self.input_label, [1], axis=0)
+                    
      
      def on_mouse_move(self, event):
          if self.image is not None:
              #Draw the cross on canvas
              self.update_canvas(crosshair=(event.x-self.x, event.y-self.y))
+
+     #Second mouse button
+     def on_mouse2_down(self, event):
+         if self.image is not None:
+              self.rect_start=(event.x-self.x, event.y-self.y)
+
+     def on_mouse2_up(self, event):
+         if self.rect_start:
+               self.rect_end=(event.x-self.x, event.y-self.y)
+               if self.rect_start == self.rect_end:
+                    self.input_point= np.append(self.input_point,[self.rect_start], axis=0)
+                    self.input_label = np.append(self.input_label, [0],axis=0)
+                    
+
+     #Set prompts
+     def set_point_prompt(self):
+          self.prompt_state="Point"
+
+     def set_box_prompt(self):
+          self.prompt_state="Box"
 
      #Update the canvas method
      def update_canvas(self, crosshair=None):
@@ -210,8 +253,9 @@ class ImageEditor:
                     self.prompt_state="Box"
                #Show the selected prompt
                messagebox.showinfo("Select prompt", f"Selected prompt is {self.prompt_state}!")
-
-               self.segment=SAM_Segmentator(self.zoomed_image, self.file_name, self.rect_start, self.rect_end, self.image_shape, self.prompt_state)
+               print(self.input_point)
+               print(self.input_label)
+               self.segment=SAM_Segmentator(self.zoomed_image, self.file_name, self.input_point, self.input_label , self.image_shape, self.prompt_state)
                if self.segment.semgentation_successful:
                     self.update_canvas_annotated_image()
                     messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")
@@ -257,7 +301,8 @@ class ImageEditor:
                cv2.imwrite(output_image_path, self.annotated_image_real_size)
                self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                cv2.imwrite(output_image_path, self.image1)
-
+               self.input_point = np.empty((0, 2))
+               self.input_label = np.empty((0,))
                self.query_box.destroy()
 
      #Reset the rectangle method (in case the user is not satisfied with the bounding box)
@@ -270,7 +315,10 @@ class ImageEditor:
                self.rect_end = None
                self.image=self.original_image.copy()
                self.update_canvas()
-               self.query_box.destroy()
+               self.input_point = np.empty((0, 2))
+               self.input_label = np.empty((0,))
+               if self.query_box != None:
+                    self.query_box.destroy()
 
 if __name__=="__main__":
        root=Tk()

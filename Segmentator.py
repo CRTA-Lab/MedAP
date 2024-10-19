@@ -2,7 +2,7 @@ import cv2
 import torch
 import numpy as np
 
-from segment_anything import SamPredictor
+from segment_anything import SamPredictor, sam_model_registry
 from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
 from argparse import Namespace
 
@@ -11,7 +11,7 @@ from Segmentation_helper import create_directory
 
 #Segmentator class
 class SAM_Segmentator:
-    def __init__(self, image, file_name,rect_start, rect_end, real_image_shape, prompt_state):
+    def __init__(self, image, file_name, input_point, input_label, real_image_shape, prompt_state):
         """
         Segmentator instance.
 
@@ -29,10 +29,9 @@ class SAM_Segmentator:
         self.image=image
         #self.image_name=f"{file_name.split('.')[0]}.png"
         self.image_name=file_name
-        self.rect_start=rect_start
-        self.rect_end=rect_end
-        x1,y1=self.rect_start
-        x2,y2=self.rect_end
+        self.input_point=input_point
+        self.input_label=input_label
+        
         self.image_shape=real_image_shape
         self.prompt_state=prompt_state
         ####************ DEVELOPER STUFF ************######
@@ -44,8 +43,8 @@ class SAM_Segmentator:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         #Setup model
-        #self.sam_checkpoint="sam_vit_b_01ec64.pth"
-        self.sam_checkpoint="sam-med2d_b.pth"
+        self.sam_checkpoint="sam_vit_b_01ec64.pth"
+        #self.sam_checkpoint="sam-med2d_b.pth"
         self.model_type="vit_b"
 
         #SAM-Med2D
@@ -53,9 +52,9 @@ class SAM_Segmentator:
         args.image_size = 256
         args.encoder_adapter = True
         args.sam_checkpoint = self.sam_checkpoint
-        self.sam = sammed_model_registry[self.model_type](args).to(self.device)
+        #self.sam = sammed_model_registry[self.model_type](args).to(self.device)
 
-        #self.sam=sam_model_registry[self.model_type](checkpoint=self.sam_checkpoint)
+        self.sam=sam_model_registry[self.model_type](checkpoint=self.sam_checkpoint)
         self.sam.to(device=self.device)
 
         #Setup the predictor
@@ -64,16 +63,16 @@ class SAM_Segmentator:
         #Process image to produce image embedding that will be used for mask prediction
         self.predictor.set_image(self.image)
 
-        #Set the point on the object you want to detect
-        if self.prompt_state=="Box":
+        # #Set the point on the object you want to detect
+        # if self.prompt_state=="Box":
 
-            self.input_point = np.array([[self.rect_start[0], self.rect_start[1], self.rect_end[0], self.rect_end[1]]])
-            self.input_label = np.array([1])
+        #     self.input_point = np.array([[self.rect_start[0], self.rect_start[1], self.rect_end[0], self.rect_end[1]]])
+        #     self.input_label = np.array([1])
 
-        if self.prompt_state=="Point":
+        # if self.prompt_state=="Point":
 
-            self.input_point = np.array([[self.rect_start[0], self.rect_start[1]]])
-            self.input_label = np.array([1])
+        #     self.input_point = np.array([[self.rect_start[0], self.rect_start[1]]])
+        #     self.input_label = np.array([1])
         #Perform the prediction on specified image
         self.predict()
 
