@@ -3,7 +3,7 @@ import numpy as np
 from tkinter import Tk, Label, Canvas, filedialog, messagebox, simpledialog
 from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
-
+import torch
 from Segmentator import SAM_Segmentator
 from constants import *
 
@@ -12,7 +12,7 @@ class ImageEditor:
           self.root=root
           self.root.title("Image Editor")
           self.root.configure(bg=COLOUR_ROOT_BG)
-
+          self.device= "cuda" if torch.cuda.is_available() else "cpu"
           #Initialize variables
           self.image=None          #Loaded image (Image that is used to show created boxes)
           self.original_image=None #Original image (Image passed to the SAM model)
@@ -121,6 +121,7 @@ class ImageEditor:
                #Load arrays that are used if points are used
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
+               self.box_list=[]
      
      #Zoom in method
      def zoom_in(self):
@@ -163,8 +164,16 @@ class ImageEditor:
                     self.input_point = np.append(self.input_point,[self.rect_start], axis=0)
                     self.input_label = np.append(self.input_label, [1], axis=0)
                else:
-                    self.input_point = np.append(self.input_point,[self.rect_start, self.rect_end], axis=0)
-                    self.input_label = np.append(self.input_label, [1], axis=0)
+                    self.box=[self.rect_start[0], self.rect_start[1], self.rect_end[0], self.rect_end[1]]
+                    self.box_list.append(self.box)
+                    #If there is only one box, create a numpy array
+                    if len(self.box_list)==1:
+                         self.input_point = np.array(self.box)
+                         self.input_label = np.append(self.input_label, [1], axis=0)
+
+                    #If there is more than one box, create torch tensor
+                    else:
+                         self.input_point = torch.tensor(self.box_list, device=self.device)
                     
      
      def on_mouse_move(self, event):
@@ -239,14 +248,10 @@ class ImageEditor:
 
      #Method that performs image segmentation
      def perform_segmentation(self):
-          #Check if the prompt is selected
-          # if self.prompt_state==None:
-          #      messagebox.showinfo( "Select prompt", "Select the used prompt!")
-          #Perform the segmentation if the image is uploaded
           if self.image is not None:
                #Set the string name of saved annotations
                self.file_name=simpledialog.askstring("Annotation", "Enter the filename (without extension):")
-               #Check the prompt state based od starting and ending point
+               # #Check the prompt state based od starting and ending point
                if self.rect_start == self.rect_end:
                     self.prompt_state="Point"
                elif self.rect_start != self.rect_end:
@@ -254,6 +259,7 @@ class ImageEditor:
                #Show the selected prompt
                messagebox.showinfo("Select prompt", f"Selected prompt is {self.prompt_state}!")
                print(self.input_point)
+               print("A")
                print(self.input_label)
                self.segment=SAM_Segmentator(self.zoomed_image, self.file_name, self.input_point, self.input_label , self.image_shape, self.prompt_state)
                if self.segment.semgentation_successful:
@@ -317,6 +323,7 @@ class ImageEditor:
                self.update_canvas()
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
+               self.box_list=[]
                if self.query_box != None:
                     self.query_box.destroy()
 
