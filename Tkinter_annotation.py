@@ -210,7 +210,7 @@ class ImageEditor:
                self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
 
                #Display image
-               self.canvas.delete("all")
+               #self.canvas.delete("all")
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.zoomed_image))
                # Calculate coordinates to center the image
                canvas_width = self.canvas.winfo_width()
@@ -225,6 +225,20 @@ class ImageEditor:
                     x1,y1 = self.rect_start
                     x2,y2 = self.rect_end
                     self.canvas.create_rectangle(x1+self.x,y1+self.y,x2+self.x,y2+self.y, outline=COLOUR_BOX_OUTLINE, width=2)
+               #Try to draw the all the stored boxes (if there is more than one)
+               try:
+                    for box in self.box_list:
+                         x1, y1, x2, y2 = box
+                         self.canvas.create_rectangle(x1 + self.x, y1 + self.y, x2 + self.x, y2 + self.y, outline=COLOUR_BOX_OUTLINE, width=2)
+               except:
+                    pass
+               #Try to draw all the stored points (if there is more than one)
+               try:
+                    for point in self.input_point:
+                         x1, y1 = point
+                         self.canvas.create_rectangle(x1 + self.x, y1 + self.y, x1 + self.x, y1 + self.y, outline=COLOUR_BOX_OUTLINE, width=2)               
+               except:
+                    pass
                #Display the cross for easier annotation
                if crosshair:
                     cx,cy=crosshair
@@ -259,7 +273,6 @@ class ImageEditor:
                #Show the selected prompt
                messagebox.showinfo("Select prompt", f"Selected prompt is {self.prompt_state}!")
                print(self.input_point)
-               print("A")
                print(self.input_label)
                self.segment=SAM_Segmentator(self.zoomed_image, self.file_name, self.input_point, self.input_label , self.image_shape, self.prompt_state)
                if self.segment.semgentation_successful:

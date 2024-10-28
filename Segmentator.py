@@ -63,16 +63,6 @@ class SAM_Segmentator:
         #Process image to produce image embedding that will be used for mask prediction
         self.predictor.set_image(self.image)
 
-        # #Set the point on the object you want to detect
-        # if self.prompt_state=="Box":
-
-        #     self.input_point = np.array([[self.rect_start[0], self.rect_start[1], self.rect_end[0], self.rect_end[1]]])
-        #     self.input_label = np.array([1])
-
-        # if self.prompt_state=="Point":
-
-        #     self.input_point = np.array([[self.rect_start[0], self.rect_start[1]]])
-        #     self.input_label = np.array([1])
         #Perform the prediction on specified image
         self.predict()
 
@@ -107,7 +97,6 @@ class SAM_Segmentator:
             else:
                 transformed_boxes = self.predictor.transform.apply_boxes_torch(self.input_point, self.image.shape[:2]).to(device=self.device)
                 self.prompt_state="Boxes"
-                print("Boxes")
                 self.masks, _, _ = self.predictor.predict_torch(
                     point_coords=None,
                     point_labels=None,
@@ -159,12 +148,10 @@ class SAM_Segmentator:
             # Apply the colored mask onto the original image
             self.annotated_image= cv2.addWeighted(self.image, 1.0, colored_mask, 0.5, 0)
             self.annotated_image= cv2.cvtColor(self.annotated_image, cv2.COLOR_BGR2RGB)
-            # self.annotated_image_real_size= cv2.resize(self.annotated_image,(self.image_shape[0], self.image_shape[1]))
-            # self.annotated_image_real_size= cv2.cvtColor(self.annotated_image_real_size, cv2.COLOR_BGR2RGB)
             self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
         else:
             self.image_with_contours=self.image.copy()
-            self.resized_mask = np.zeros_like(self.image, dtype=np.uint8)
+            self.resized_mask = np.zeros((self.image_shape[1], self.image_shape[0], 3), dtype=np.uint8)
 
             for mask in self.masks:
                 mask=mask.to("cpu").numpy()
@@ -187,7 +174,7 @@ class SAM_Segmentator:
 
                 #Create a mask of annotated part in real size      
                 self.resized_mask_of_a_segment = cv2.resize(mask[0].astype(np.uint8), (self.image_shape[0], self.image_shape[1]), interpolation=cv2.INTER_NEAREST)
-                self.resized_mask_of_a_segment = cv2.cvtColor(self.resized_mask0, cv2.COLOR_GRAY2BGR)
+                self.resized_mask_of_a_segment = cv2.cvtColor(self.resized_mask_of_a_segment, cv2.COLOR_GRAY2BGR)
 
                 self.resized_mask=cv2.add(self.resized_mask,self.resized_mask_of_a_segment)
                 #Find mask contours on specified mask
@@ -202,8 +189,6 @@ class SAM_Segmentator:
                 # Apply the colored mask onto the original image
                 self.annotated_image= cv2.addWeighted(self.image, 1.0, colored_mask, 0.5, 0)
                 self.annotated_image= cv2.cvtColor(self.annotated_image, cv2.COLOR_BGR2RGB)
-                # self.annotated_image_real_size= cv2.resize(self.annotated_image,(self.image_shape[0], self.image_shape[1]))
-                # self.annotated_image_real_size= cv2.cvtColor(self.annotated_image_real_size, cv2.COLOR_BGR2RGB)
                 self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
 
 
