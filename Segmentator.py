@@ -192,19 +192,19 @@ class SAM_Segmentator:
                 self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
 
 
-        #Function that removes the part of the mask that is specified using bounding box
-        def edit_segmentation(self, rect_start, rect_end) -> None:
-            self.rect_start=rect_start
-            self.rect_end=rect_end
-            self.resized_mask[self.rect_start[1]:self.rect_end[1], self.rect_start[0]:self.rect_end[0]]=0
+    #Function that removes the part of the mask that is specified using bounding box
+    def edit_segmentation(self, rect_start, rect_end) -> None:
+        self.rect_start=rect_start
+        self.rect_end=rect_end
+        self.resized_mask[self.rect_start[1]:self.rect_end[1], self.rect_start[0]:self.rect_end[0]]=0
 
-            #Find mask contours on specified mask
-            self.contours, self.hierarchy = cv2.findContours(self.resized_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        #Find mask contours on specified mask
+        self.contours, self.hierarchy = cv2.findContours(self.resized_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
-            #Create an original image with mask border
-            self.image_with_contours=self.image.copy()
-            cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
+        #Create an original image with mask border
+        self.image_with_contours=self.image.copy()
+        cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
 
-            self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
+        self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
         
 

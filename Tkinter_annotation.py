@@ -210,7 +210,7 @@ class ImageEditor:
                self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
 
                #Display image
-               #self.canvas.delete("all")
+               self.canvas.delete("all")
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.zoomed_image))
                # Calculate coordinates to center the image
                canvas_width = self.canvas.winfo_width()
@@ -258,7 +258,21 @@ class ImageEditor:
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.image_with_contours))
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
            
-     
+     #Update canvas with annotated image
+     def update_canvas_original_image(self):
+         if self.segment.annotated_image is not None:
+               #Display image
+               self.canvas.delete("all")
+                # Resize the image based on the zoom factor
+               zoomed_width = int(self.image.shape[1] * self.zoom_value)
+               zoomed_height = int(self.image.shape[0] * self.zoom_value)
+               self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
+
+               #Display image
+               #self.canvas.delete("all")
+               self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.zoomed_image))
+               self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
+           
 
      #Method that performs image segmentation
      def perform_segmentation(self):
@@ -282,30 +296,37 @@ class ImageEditor:
 
      #Query method to check if the user is satisfied with the annotation
      def query_user(self):
-        self.image=self.segment.annotated_image_real_size
+          self.image=self.segment.annotated_image_real_size
+          
+          self.input_point = np.empty((0, 2))
+          self.input_label = np.empty((0,))
+          self.box_list=[]
+          self.query_box = Toplevel(self.root)
+          self.query_box.title("Perform Segmentation")
+          
+          message = Label(self.query_box, text="Do you want to perform segmentation?")
+          message.pack(pady=20)
+          
+          accept_button = ttk.Button(self.query_box, text="Accept", command=self.save_image)
+          accept_button.pack(padx=20, pady=10)
+          
+          # Reject button
+          reject_button = ttk.Button(self.query_box, text="Reject", command=self.reset_rectangle)
+          reject_button.pack(padx=20)
 
-        self.query_box = Toplevel(self.root)
-        self.query_box.title("Perform Segmentation")
-        
-        message = Label(self.query_box, text="Do you want to perform segmentation?")
-        message.pack(pady=20)
-        
-        accept_button = ttk.Button(self.query_box, text="Accept", command=self.save_image)
-        accept_button.pack(padx=20, pady=10)
-        
-        # Reject button
-        reject_button = ttk.Button(self.query_box, text="Reject", command=self.reset_rectangle)
-        reject_button.pack(padx=20)
-     
-        #self.update_canvas()
+          self.update_canvas_annotated_image()
 
      #Save the image method
      def save_image(self):
           if self.image is not None:
+               
                self.image=self.original_image.copy()
                
                self.rect_start=None
                self.rect_end=None
+               self.input_point = np.empty((0, 2))
+               self.input_label = np.empty((0,))
+               self.box_list=[]
                annotation_save_path=f"AnnotatedDataset/txt/annotation{self.file_name}.txt"
                with open(annotation_save_path, "w") as f:
                     f.write(self.segment.yolo_annotation)
@@ -323,22 +344,22 @@ class ImageEditor:
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.query_box.destroy()
+               self.update_canvas_original_image()
 
      #Reset the rectangle method (in case the user is not satisfied with the bounding box)
      def reset_rectangle(self):
           if self.image is not None:
                # Reset the temporary image to the original
-               self.image=self.original_image
-               self.temp_image = self.image.copy()
+               self.image=self.original_image.copy()
                self.rect_start = None
                self.rect_end = None
-               self.image=self.original_image.copy()
-               self.update_canvas()
+               self.update_canvas_original_image()
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.box_list=[]
                if self.query_box != None:
                     self.query_box.destroy()
+               
 
 if __name__=="__main__":
        root=Tk()
