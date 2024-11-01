@@ -204,7 +204,7 @@ class ImageEditor:
      #Update the canvas method
      def update_canvas(self, crosshair=None):
          if self.image is not None:
-                # Resize the image based on the zoom factor
+               # Resize the image based on the zoom factor
                zoomed_width = int(self.image.shape[1] * self.zoom_value)
                zoomed_height = int(self.image.shape[0] * self.zoom_value)
                self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
@@ -302,7 +302,7 @@ class ImageEditor:
      #Save the image method
      def save_image(self):
           if self.image is not None:
-               self.image=self.original_image
+               self.image=self.original_image.copy()
                
                self.rect_start=None
                self.rect_end=None
