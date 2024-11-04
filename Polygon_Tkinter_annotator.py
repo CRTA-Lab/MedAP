@@ -41,6 +41,7 @@ class ImageEditor:
         # Buttons
         self.load_button = ttk.Button(button_frame, text="Load Image", command=self.load_image, style="TButton")
         self.save_button = ttk.Button(button_frame, text="Save Image", command=self.save_image, style="TButton")
+        
         self.draw_polygon_button = ttk.Button(button_frame, text="Draw Polygon", command=self.start_polygon_drawing, style="TButton")
         self.reset_polygon_button = ttk.Button(button_frame, text="Reset Polygon", command=self.reset_polygon, style="TButton")
         self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style="TButton")

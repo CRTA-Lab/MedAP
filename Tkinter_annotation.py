@@ -33,6 +33,10 @@ class ImageEditor:
           self.prompt_state=None
           #Initialize query box
           self.query_box=None
+
+          # Polygon drawing state
+          self.drawing_polygon = False
+          self.polygon_points = []
           
           #Styling settings for Tkinter
           style = ttk.Style()
@@ -53,6 +57,8 @@ class ImageEditor:
           self.load_button = ttk.Button(button_frame, text="Load image", command=self.load_image, style='TButton')
           self.save_button = ttk.Button(button_frame, text="Save image", command=self.save_image, style='TButton')
           self.reset_button = ttk.Button(button_frame, text="Reset Rectangle", command=self.reset_rectangle, style='TButton')
+          self.draw_polygon_button = ttk.Button(button_frame, text="Draw Polygon", command=self.start_polygon_drawing, style="TButton")
+          self.reset_polygon_button = ttk.Button(button_frame, text="Reset Polygon", command=self.reset_polygon, style="TButton")
           self.perform_segmentation_button = ttk.Button(button_frame, text="Perform segmentation", command=self.perform_segmentation, style='TButton')
           self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style='TButton')
 
@@ -60,12 +66,14 @@ class ImageEditor:
           self.load_button.grid(row=0, column=0, pady=10, sticky="ew")
           self.save_button.grid(row=1, column=0, pady=10, sticky="ew")
           self.reset_button.grid(row=2, column=0, pady=10, sticky="ew")
-          self.perform_segmentation_button.grid(row=3, column=0, pady=10, sticky="ew")
-          self.exit_button.grid(row=4, column=0, pady=10, sticky="ew")
+          self.draw_polygon_button.grid(row=3, column=0, pady=10, sticky="ew")
+          self.reset_polygon_button.grid(row=4, column=0, pady=10, sticky="ew")
+          self.perform_segmentation_button.grid(row=5, column=0, pady=10, sticky="ew")
+          self.exit_button.grid(row=6, column=0, pady=10, sticky="ew")
 
           # Create a frame for other controls
           second_frame = ttk.Frame(button_frame)
-          second_frame.grid(row=5, column=0, pady=20, sticky="ew")
+          second_frame.grid(row=7, column=0, pady=20, sticky="ew")
 
           # Group 2: 
           # Select point or box controls
@@ -95,6 +103,7 @@ class ImageEditor:
           # Bind mouse events for rectangle drawing (unchanged)
           self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
           self.canvas.bind("<Button-1>", self.on_mouse_down)
+          self.canvas.bind("<Double-1>", self.on_double_click) 
           self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
           self.canvas.bind("<ButtonRelease-1>", self.on_mouse_up)
           self.canvas.bind("<Motion>", self.on_mouse_move)  
@@ -147,10 +156,47 @@ class ImageEditor:
      def save_mask(self):
           pass
 
+     #When drawing a polygon
+     def start_polygon_drawing(self):
+        """Start polygon drawing mode."""
+        self.drawing_polygon = True
+        self.polygon_points.clear()
+        messagebox.showinfo("Polygon Mode", "Click on the canvas to add vertices. Double-click to complete.")
+
+     #Reset a polygon
+     def reset_polygon(self):
+          """Clear the current polygon points."""
+          if self.image is not None:
+               self.polygon_points.clear()
+               self.update_canvas()
+     
+     def complete_polygon(self):
+        """Complete the polygon and stop polygon drawing mode."""
+        if len(self.polygon_points) < 3:
+            messagebox.showwarning("Polygon Error", "At least 3 points are needed to complete a polygon.")
+            return
+
+        self.drawing_polygon = False
+        # Draw the completed polygon on the image in white with thicker lines
+        cv2.polylines(self.image, [np.array(self.polygon_points)], isClosed=True, color=(255, 255, 255), thickness=3)
+        self.update_canvas()
+        print("Polygon points:", self.polygon_points)  # Optional: print or save these points
+
+
      #Mouse action methods:
      def on_mouse_down(self, event):
          if self.image is not None:
-              self.rect_start=(event.x-self.x, event.y-self.y)
+               if self.drawing_polygon is False:
+                    self.rect_start=(event.x-self.x, event.y-self.y)
+               else:
+                    x, y = int((event.x - self.x) / self.zoom_value), int((event.y - self.y) / self.zoom_value)
+                    self.polygon_points.append((x, y))
+                    self.update_canvas(draw_polygon=True)
+
+     def on_double_click(self, event):
+        """Complete the polygon when double-clicked."""
+        if self.drawing_polygon:
+            self.complete_polygon()
 
      def on_mouse_drag(self, event):
          if self.rect_start:
@@ -219,6 +265,15 @@ class ImageEditor:
                self.y = (canvas_height - zoomed_height) // 2
                #Display the image at central coordinates
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
+
+               # Draw temporary polygon while adding points
+               if self.drawing_polygon==True and self.polygon_points:
+                    scaled_points = [(int(px * self.zoom_value) + self.x, int(py * self.zoom_value) + self.y) for px, py in self.polygon_points]
+                    for i in range(1, len(scaled_points)):
+                         self.canvas.create_line(scaled_points[i - 1], scaled_points[i], fill="white", width=3)
+                    if len(scaled_points) > 1:
+                         self.canvas.create_line(scaled_points[-1], scaled_points[0], fill="white", width=3)  # Close the loop
+
                               
                #Draw rectangle on canvas
                if self.rect_start and self.rect_end:
