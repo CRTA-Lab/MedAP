@@ -11,16 +11,16 @@ from Segmentation_helper import create_directory
 
 #Segmentator class
 class SAM_Segmentator:
-    def __init__(self, image, file_name, input_point, input_label, real_image_shape, prompt_state):
+    def __init__(self, image, file_name, input_point, input_label, real_image_shape, prompt_state) -> None:
         """
         Segmentator instance.
 
         Args: 
             image - an image to be segmented (zoomed)
             file_name - the image name stored from the image file
-            rect_start - the coordinates (x,y) of starting point of created bounding box
-            rect_end - the coordinated (x,y) of endinng points of created bouding box
-            image_shape - real image shape [width, height]
+            input_point - the input prompt for the model (point/points, box/boxes)
+            input_label - the specified label for each point/box
+            real_image_shape - real image shape [width, height]
             prompt_state - the prompt that is used ( Point, Box, ...)
         Output:
             No output.
@@ -115,6 +115,7 @@ class SAM_Segmentator:
     def save_prediction(self) -> None:
         if self.prompt_state=="Box" or self.prompt_state=="Point":
             #Create YOLO-compatible annotation
+            print(f"Mask: {self.masks[0]}")
             h,w =self.masks[0].shape
             y,x =np.where(self.masks[0]>0)
             x_min, x_max = x.min(), x.max()
@@ -155,6 +156,7 @@ class SAM_Segmentator:
 
             for mask in self.masks:
                 mask=mask.to("cpu").numpy()
+                
                 #Create YOLO-compatible annotation
                 h,w =mask[0].shape
                 y,x =np.where(mask[0]>0)

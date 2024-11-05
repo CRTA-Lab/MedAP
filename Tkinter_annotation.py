@@ -5,6 +5,7 @@ from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
 import torch
 from Segmentator import SAM_Segmentator
+from Polygon_segmentator import Polygon_Segmentator
 from constants import *
 
 class ImageEditor:
@@ -168,7 +169,7 @@ class ImageEditor:
           """Clear the current polygon points."""
           if self.image is not None:
                self.polygon_points.clear()
-               self.update_canvas()
+               self.update_canvas_original_image()
      
      def complete_polygon(self):
         """Complete the polygon and stop polygon drawing mode."""
@@ -195,8 +196,12 @@ class ImageEditor:
 
      def on_double_click(self, event):
         """Complete the polygon when double-clicked."""
+        self.number_of_polygons=1
         if self.drawing_polygon:
             self.complete_polygon()
+            self.file_name="Polygon"
+            self.polygon=Polygon_Segmentator(self.zoomed_image, self.file_name, self.image_shape, self.number_of_polygons, self.polygon_points)
+            self.polygon.create_polygon()
 
      def on_mouse_drag(self, event):
          if self.rect_start:
@@ -307,15 +312,12 @@ class ImageEditor:
          if self.segment.annotated_image is not None:
                #Display image
                self.canvas.delete("all")
-               # self.segment.annotated_image=cv2.cvtColor(self.segment.annotated_image, cv2.COLOR_BGR2RGB)
-               # self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.annotated_image))
-               # self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.image_with_contours))
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
            
      #Update canvas with annotated image
      def update_canvas_original_image(self):
-         if self.segment.annotated_image is not None:
+         if self.image is not None:
                #Display image
                self.canvas.delete("all")
                 # Resize the image based on the zoom factor
