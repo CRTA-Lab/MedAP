@@ -47,9 +47,6 @@ class Polygon_Segmentator:
         # Convert polygon points to NumPy array format for OpenCV
         self.polygon_vertices = np.array(self.polygon_points, dtype=np.int32).reshape((-1, 1, 2))
 
-        # Create a single-channel mask with the specified dimensions
-        #self.mask = np.zeros((self.real_image_shape[1], self.real_image_shape[0]), dtype=np.uint8)
-
         # Fill the polygon on the mask with white (255)
         cv2.fillPoly(self.mask, [self.polygon_vertices], 255)
 
@@ -72,6 +69,4 @@ class Polygon_Segmentator:
         mask_save_path = f"AnnotatedDataset/masks/{self.file_name}_mask.png"
         cv2.imwrite(mask_save_path, (self.resized_mask * 255).astype(np.uint8))
 
-        # Debug: Print the mask array and resized mask
-        #print("Mask after drawing polygon:\n", self.mask.astype(np.uint8))
-        #print("Resized Mask for saving:\n", self.resized_mask)
+

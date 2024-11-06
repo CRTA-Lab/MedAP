@@ -56,13 +56,12 @@ class ImageEditor:
 
           #Buttons:
           # Group 1: Main actions (Load, Save, Reset, Perform Segmentation, Exit)
-          self.load_button = ttk.Button(button_frame, text="Load", command=self.load_image, style='TButton')
+          self.load_button = ttk.Button(button_frame,text="Load", command=self.load_image, style='TButton')
           self.save_button = ttk.Button(button_frame, text="Save", command=self.save_image, style='TButton')
           self.reset_button = ttk.Button(button_frame, text="Reset Annotation", command=self.reset_rectangle, style='TButton')
           self.draw_polygon_button = ttk.Button(button_frame, text="Draw Polygon", command=self.start_polygon_drawing, style="TButton")
-          #self.reset_polygon_button = ttk.Button(button_frame, text="Reset Polygon", command=self.reset_polygon, style="TButton")
           self.perform_segmentation_button = ttk.Button(button_frame, text="Perform segmentation", command=self.perform_segmentation, style='TButton')
-          self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style='TButton')
+          #self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style='TButton')
 
           # Arrange these buttons in the grid (1 column, multiple rows)
           self.load_button.grid(row=0, column=0, pady=10, sticky="ew")
@@ -71,20 +70,11 @@ class ImageEditor:
           self.draw_polygon_button.grid(row=3, column=0, pady=10, sticky="ew")
           #self.reset_polygon_button.grid(row=4, column=0, pady=10, sticky="ew")
           self.perform_segmentation_button.grid(row=5, column=0, pady=10, sticky="ew")
-          self.exit_button.grid(row=6, column=0, pady=10, sticky="ew")
+          #self.exit_button.grid(row=6, column=0, pady=10, sticky="ew")
 
           # Create a frame for other controls
           second_frame = ttk.Frame(button_frame)
           second_frame.grid(row=7, column=0, pady=20, sticky="ew")
-
-          # Group 2: 
-          # Select point or box controls
-          #self.point_button = ttk.Button(second_frame, text="Point", command=self.set_point_prompt, style='TButton')
-          #self.box_button = ttk.Button(second_frame, text="Box", command=self.set_box_prompt, style='TButton')
-
-          # Arrange zoom buttons horizontally
-          #self.point_button.grid(row=0, column=0, padx=10, pady=20, sticky="ew")
-          #self.box_button.grid(row=0, column=1, padx=10, pady=20, sticky="ew")
 
           # Zoom controls (Zoom In, Zoom Out)
           self.zoom_in_button = ttk.Button(second_frame, text="Zoom In", command=self.zoom_in, style='TButton')
@@ -95,12 +85,10 @@ class ImageEditor:
           self.zoom_out_button.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
 
           # Mask edit controls
-          self.edit_mask_button = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
-          self.save_mask_button = ttk.Button(second_frame, text="Save Mask",command=self.save_mask, style="TButton")
+          #self.edit_mask_button = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
 
           # Arrrange mask control buttons
           self.edit_mask_button.grid(row=2, column=0, padx=10, sticky="ew")
-          self.save_mask_button.grid(row=2, column=1, padx=10, sticky="ew")
 
           # Bind mouse events for rectangle drawing (unchanged)
           self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
@@ -153,16 +141,12 @@ class ImageEditor:
      #Define point prompt method
      def edit_mask(self):
           if self.segment is not None:
-               self.segment.edit_segmentation(self.rect_start, self.rect_end)
+               self.segment.edit_segmentation(self.rect_start, 
+                                              self.rect_end)
                self.update_canvas_annotated_image()
                self.image=self.segment.image_with_contours.copy()
 
-
-     #Define box prompt method
-     def save_mask(self):
-          pass
-
-     #When drawing a polygon
+     #Start drawing a polygon
      def start_polygon_drawing(self):
           """Start polygon drawing mode."""
           self.drawing_polygon = True
@@ -171,7 +155,7 @@ class ImageEditor:
                self.file_name=simpledialog.askstring("Polygon Mode", "Click on the canvas to add vertices. Double-click to complete. \n Enter the filename (without extension):")
                self.first_polygon=False
 
-     
+     #Complete a polygon creation
      def complete_polygon(self):
           """Complete the polygon and stop polygon drawing mode."""
           if len(self.polygon_points) < 3:
@@ -180,11 +164,10 @@ class ImageEditor:
           messagebox.showinfo("Polygon", "Polygon created successfully.")
 
           self.drawing_polygon = False
-          # Draw the completed polygon on the image in white with thicker lines
-          cv2.polylines(self.image, [np.array(self.polygon_points)], isClosed=True, color=(255, 255, 255), thickness=1)
+          # Draw the completed polygon on the image
+          cv2.polylines(self.image, [np.array(self.polygon_points)], isClosed=True, color=(255, 255, 255), thickness=2)
           self.update_canvas()
-          print("Polygon points:", self.polygon_points)  # Optional: print or save these points
-
+          #print("Polygon points:", self.polygon_points)  
 
      #Mouse action methods:
      def on_mouse_down(self, event):
@@ -196,12 +179,17 @@ class ImageEditor:
                     self.polygon_points.append((x, y))
                     self.update_canvas(draw_polygon=True)
 
+     #Compplete the polygon on double click
      def on_double_click(self, event):
         """Complete the polygon when double-clicked."""
         self.number_of_polygons=1
         if self.drawing_polygon:
             self.complete_polygon()
-            self.polygon=Polygon_Segmentator(self.zoomed_image, self.file_name, self.image_shape, self.polygon_points, self.mask)
+            self.polygon=Polygon_Segmentator(self.zoomed_image, 
+                                             self.file_name, 
+                                             self.image_shape, 
+                                             self.polygon_points, 
+                                             self.mask)
             self.polygon.create_polygon()
 
      def on_mouse_drag(self, event):
@@ -216,6 +204,10 @@ class ImageEditor:
                     self.input_point = np.append(self.input_point,[self.rect_start], axis=0)
                     self.input_label = np.append(self.input_label, [1], axis=0)
                else:
+                    # if self.rect_start[0] > self.rect_end[0] or self.rect_start[1] > self.rect_end[1]:
+                    #      self.rect_temp=self.rect_start
+                    #      self.rect_start=self.rect_end
+                    #      self.rect_end=self.rect_temp
                     self.box=[self.rect_start[0], self.rect_start[1], self.rect_end[0], self.rect_end[1]]
                     self.box_list.append(self.box)
                     #If there is only one box, create a numpy array
@@ -244,14 +236,12 @@ class ImageEditor:
                if self.rect_start == self.rect_end:
                     self.input_point= np.append(self.input_point,[self.rect_start], axis=0)
                     self.input_label = np.append(self.input_label, [0],axis=0)
+               if self.rect_start[0] > self.rect_end[0] or self.rect_start[1] > self.rect_end[1]:
+                         self.rect_temp=self.rect_start
+                         self.rect_start=self.rect_end
+                         self.rect_end=self.rect_temp
+               
                     
-
-     #Set prompts
-     # def set_point_prompt(self):
-     #      self.prompt_state="Point"
-
-     # def set_box_prompt(self):
-     #      self.prompt_state="Box"
 
      #Update the canvas method
      def update_canvas(self, crosshair=None):
@@ -346,7 +336,12 @@ class ImageEditor:
                messagebox.showinfo("Select prompt", f"Selected prompt is {self.prompt_state}!")
                print(self.input_point)
                print(self.input_label)
-               self.segment=SAM_Segmentator(self.zoomed_image, self.file_name, self.input_point, self.input_label , self.image_shape, self.prompt_state)
+               self.segment=SAM_Segmentator(self.zoomed_image, 
+                                            self.file_name, 
+                                            self.input_point, 
+                                            self.input_label , 
+                                            self.image_shape, 
+                                            self.prompt_state)
                if self.segment.semgentation_successful:
                     self.update_canvas_annotated_image()
                     messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")

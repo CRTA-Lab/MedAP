@@ -11,7 +11,7 @@ from Segmentation_helper import create_directory
 
 #Segmentator class
 class SAM_Segmentator:
-    def __init__(self, image, file_name, input_point, input_label, real_image_shape, prompt_state) -> None:
+    def __init__(self, image, file_name : str, input_point, input_label, real_image_shape : list , prompt_state : str) -> None:
         """
         Segmentator instance.
 
@@ -140,7 +140,7 @@ class SAM_Segmentator:
 
             #Create an original image with mask border
             self.image_with_contours=self.image.copy()
-            cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 1)
+            cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
 
             # Create a colored overlay for the mask
             colored_mask = np.zeros_like(self.image, dtype=np.uint8)
@@ -183,7 +183,7 @@ class SAM_Segmentator:
                 self.contours, self.hierarchy = cv2.findContours(mask[0].astype(np.uint8),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
                 #Create an original image with mask border
-                cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 1)
+                cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
                 # Create a colored overlay for the mask
                 colored_mask = np.zeros_like(self.image, dtype=np.uint8)
                 colored_mask[mask[0] > 0] = [100, 100, 255]  # Green color for the mask (adjust the color as needed)
@@ -199,13 +199,14 @@ class SAM_Segmentator:
         self.rect_start=rect_start
         self.rect_end=rect_end
         self.resized_mask[self.rect_start[1]:self.rect_end[1], self.rect_start[0]:self.rect_end[0]]=0
-
+        self.resized_mask=cv2.resize(self.resized_mask,(self.image_with_contours.shape[1], self.image_with_contours.shape[0]), interpolation=cv2.INTER_NEAREST)
+        print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
         #Find mask contours on specified mask
         self.contours, self.hierarchy = cv2.findContours(self.resized_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
         #Create an original image with mask border
         self.image_with_contours=self.image.copy()
-        cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 1)
+        cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
 
         self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
         
