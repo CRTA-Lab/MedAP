@@ -5,7 +5,7 @@ from Segmentation_helper import create_directory
 
 #Polygon segmentator class
 class Polygon_Segmentator:
-    def __init__(self, image, file_name, real_image_shape, number_of_polygons ,polygon_points) -> None:
+    def __init__(self, image, file_name, real_image_shape,polygon_points, mask) -> None:
         """
         Polygon segmentation instance.
 
@@ -23,8 +23,8 @@ class Polygon_Segmentator:
         self.image=image
         self.file_name=file_name
         self.real_image_shape=real_image_shape
-        self.number_of_polygons=number_of_polygons
         self.polygon_points=polygon_points
+        self.mask=mask
 
     def setup_directories(self) -> None:
         '''
@@ -48,8 +48,7 @@ class Polygon_Segmentator:
         self.polygon_vertices = np.array(self.polygon_points, dtype=np.int32).reshape((-1, 1, 2))
 
         # Create a single-channel mask with the specified dimensions
-        self.mask = np.zeros((self.image.shape[0], self.image.shape[1]), dtype=np.uint8)
-        self.mask = cv2.resize(self.mask,(self.real_image_shape[0], self.real_image_shape[1]))
+        #self.mask = np.zeros((self.real_image_shape[1], self.real_image_shape[0]), dtype=np.uint8)
 
         # Fill the polygon on the mask with white (255)
         cv2.fillPoly(self.mask, [self.polygon_vertices], 255)
@@ -76,4 +75,3 @@ class Polygon_Segmentator:
         # Debug: Print the mask array and resized mask
         #print("Mask after drawing polygon:\n", self.mask.astype(np.uint8))
         #print("Resized Mask for saving:\n", self.resized_mask)
-

@@ -140,7 +140,7 @@ class SAM_Segmentator:
 
             #Create an original image with mask border
             self.image_with_contours=self.image.copy()
-            cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
+            cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 1)
 
             # Create a colored overlay for the mask
             colored_mask = np.zeros_like(self.image, dtype=np.uint8)
@@ -183,7 +183,7 @@ class SAM_Segmentator:
                 self.contours, self.hierarchy = cv2.findContours(mask[0].astype(np.uint8),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
                 #Create an original image with mask border
-                cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
+                cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 1)
                 # Create a colored overlay for the mask
                 colored_mask = np.zeros_like(self.image, dtype=np.uint8)
                 colored_mask[mask[0] > 0] = [100, 100, 255]  # Green color for the mask (adjust the color as needed)
@@ -205,7 +205,7 @@ class SAM_Segmentator:
 
         #Create an original image with mask border
         self.image_with_contours=self.image.copy()
-        cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 2)
+        cv2.drawContours(self.image_with_contours, self.contours, -1, (255,255,255), 1)
 
         self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
         
