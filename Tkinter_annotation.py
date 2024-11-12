@@ -38,6 +38,7 @@ class ImageEditor:
           # Polygon drawing state
           self.drawing_polygon = False
           self.first_polygon = True
+          self.edit_polygon = False
           self.first_edit_polygon = True
           self.polygon_points = []
           
@@ -147,12 +148,15 @@ class ImageEditor:
                if self.edit_polygon==True:
                     self.segment.edit_poylgon_segmentation(self.polygon_points)
                     self.polygon_points.clear()
+                    self.drawing_polygon = False
 
                else:
                     self.segment.edit_segmentation(self.rect_start, 
                                               self.rect_end)
+                    self.drawing_polygon = False
                self.update_canvas_annotated_image()
-               self.edit_polygon==False
+               self.edit_polygon=False
+
    
 
      def edit_mask_polygon(self):
@@ -184,7 +188,10 @@ class ImageEditor:
 
           self.drawing_polygon = False
           # Draw the completed polygon on the image
-          cv2.polylines(self.image, [np.array(self.polygon_points)], isClosed=True, color=(255, 255, 255), thickness=2)
+          if self.edit_polygon == True:
+               cv2.polylines(self.image, [np.array(self.polygon_points)], isClosed=True, color=(255, 0, 0), thickness=2)
+          else:
+               cv2.polylines(self.image, [np.array(self.polygon_points)], isClosed=True, color=(255, 255, 255), thickness=2)
           self.update_canvas()
           #print("Polygon points:", self.polygon_points)  
 
@@ -446,6 +453,7 @@ class ImageEditor:
                cv2.imwrite(output_image_path, self.image1)
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
+               self.drawing_polygon = False
                self.query_box.destroy()
                self.update_canvas_original_image()
 
@@ -463,6 +471,7 @@ class ImageEditor:
 
                #If polygon exists:
                self.polygon_points.clear()
+               self.drawing_polygon = False
                self.first_polygon=True
                self.first_edit_polygon=True
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
