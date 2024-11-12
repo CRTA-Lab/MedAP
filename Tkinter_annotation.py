@@ -38,6 +38,7 @@ class ImageEditor:
           # Polygon drawing state
           self.drawing_polygon = False
           self.first_polygon = True
+          self.first_edit_polygon = True
           self.polygon_points = []
           
           #Styling settings for Tkinter
@@ -61,7 +62,7 @@ class ImageEditor:
           self.reset_button = ttk.Button(button_frame, text="Reset Annotation", command=self.reset_rectangle, style='TButton')
           self.draw_polygon_button = ttk.Button(button_frame, text="Draw Polygon", command=self.start_polygon_drawing, style="TButton")
           self.perform_segmentation_button = ttk.Button(button_frame, text="Perform segmentation", command=self.perform_segmentation, style='TButton')
-          #self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style='TButton')
+          self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style='TButton')
 
           # Arrange these buttons in the grid (1 column, multiple rows)
           self.load_button.grid(row=0, column=0, pady=10, sticky="ew")
@@ -69,8 +70,8 @@ class ImageEditor:
           self.reset_button.grid(row=2, column=0, pady=10, sticky="ew")
           self.draw_polygon_button.grid(row=3, column=0, pady=10, sticky="ew")
           #self.reset_polygon_button.grid(row=4, column=0, pady=10, sticky="ew")
-          self.perform_segmentation_button.grid(row=5, column=0, pady=10, sticky="ew")
-          #self.exit_button.grid(row=6, column=0, pady=10, sticky="ew")
+          self.perform_segmentation_button.grid(row=4, column=0, pady=10, sticky="ew")
+          self.exit_button.grid(row=5, column=0, pady=10, sticky="ew")
 
           # Create a frame for other controls
           second_frame = ttk.Frame(button_frame)
@@ -85,10 +86,12 @@ class ImageEditor:
           self.zoom_out_button.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
 
           # Mask edit controls
-          #self.edit_mask_button = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
+          self.edit_mask_polygon = ttk.Button(second_frame, text="Edit Polygon",command=self.edit_mask_polygon, style="TButton")
+          self.edit_mask_button = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
 
           # Arrrange mask control buttons
-          self.edit_mask_button.grid(row=2, column=0, padx=10, sticky="ew")
+          self.edit_mask_polygon.grid(row=2, column=0, padx=10, sticky="ew")
+          self.edit_mask_button.grid(row=2, column=1, padx=10, sticky="ew")
 
           # Bind mouse events for rectangle drawing (unchanged)
           self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
@@ -112,7 +115,7 @@ class ImageEditor:
                self.image=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                #Store the original image shape
                self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
-               #Copy the original image
+               #Copy the original image of original shape
                self.original_image=self.image.copy()
                self.zoom_value=1.0
                self.update_canvas()
@@ -140,11 +143,27 @@ class ImageEditor:
 
      #Define point prompt method
      def edit_mask(self):
-          if self.segment is not None:
-               self.segment.edit_segmentation(self.rect_start, 
+          if self.segment is not None or self.edit_polygon==True:
+               if self.edit_polygon==True:
+                    self.segment.edit_poylgon_segmentation(self.polygon_points)
+                    self.polygon_points.clear()
+
+               else:
+                    self.segment.edit_segmentation(self.rect_start, 
                                               self.rect_end)
                self.update_canvas_annotated_image()
-               self.image=self.segment.image_with_contours.copy()
+               self.edit_polygon==False
+   
+
+     def edit_mask_polygon(self):
+          """Start drawin polygon for editing the mask."""
+          self.edit_polygon=True
+          self.drawing_polygon=True
+          self.polygon_points.clear()
+          if self.first_edit_polygon:
+                messagebox.showinfo("Polygon for mask editing", "Create a polygon to edit the mask.")
+                self.first_edit_polygon=False
+          
 
      #Start drawing a polygon
      def start_polygon_drawing(self):
@@ -173,11 +192,11 @@ class ImageEditor:
      def on_mouse_down(self, event):
          if self.image is not None:
                if self.drawing_polygon is False:
-                    self.rect_start=(event.x-self.x, event.y-self.y)
+                    self.rect_start=(event.x-self.x, event.y-self.y) 
                else:
                     x, y = int((event.x - self.x) / self.zoom_value), int((event.y - self.y) / self.zoom_value)
                     self.polygon_points.append((x, y))
-                    self.update_canvas(draw_polygon=True)
+                    self.update_canvas()
 
      #Compplete the polygon on double click
      def on_double_click(self, event):
@@ -210,6 +229,8 @@ class ImageEditor:
                     #      self.rect_end=self.rect_temp
                     self.box=[self.rect_start[0], self.rect_start[1], self.rect_end[0], self.rect_end[1]]
                     self.box_list.append(self.box)
+                    print(f"Box: {self.box}")
+                    print(f"Image shape: {self.image.shape}")
                     #If there is only one box, create a numpy array
                     if len(self.box_list)==1:
                          self.input_point = np.array(self.box)
@@ -247,9 +268,9 @@ class ImageEditor:
      def update_canvas(self, crosshair=None):
          if self.image is not None:
                # Resize the image based on the zoom factor
-               zoomed_width = int(self.image.shape[1] * self.zoom_value)
-               zoomed_height = int(self.image.shape[0] * self.zoom_value)
-               self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
+               self.zoomed_width = int(self.image.shape[1] * self.zoom_value)
+               self.zoomed_height = int(self.image.shape[0] * self.zoom_value)
+               self.zoomed_image = cv2.resize(self.image, (self.zoomed_width, self.zoomed_height))
 
                #Display image
                self.canvas.delete("all")
@@ -257,8 +278,8 @@ class ImageEditor:
                # Calculate coordinates to center the image
                canvas_width = self.canvas.winfo_width()
                canvas_height = self.canvas.winfo_height()
-               self.x = (canvas_width - zoomed_width) // 2
-               self.y = (canvas_height - zoomed_height) // 2
+               self.x = (canvas_width - self.zoomed_width) // 2
+               self.y = (canvas_height - self.zoomed_height) // 2
                #Display the image at central coordinates
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
 
@@ -266,9 +287,9 @@ class ImageEditor:
                if self.drawing_polygon==True and self.polygon_points:
                     scaled_points = [(int(px * self.zoom_value) + self.x, int(py * self.zoom_value) + self.y) for px, py in self.polygon_points]
                     for i in range(1, len(scaled_points)):
-                         self.canvas.create_line(scaled_points[i - 1], scaled_points[i], fill="white", width=3)
+                         self.canvas.create_line(scaled_points[i - 1], scaled_points[i], fill="red", width=3)
                     if len(scaled_points) > 1:
-                         self.canvas.create_line(scaled_points[-1], scaled_points[0], fill="white", width=3)  # Close the loop
+                         self.canvas.create_line(scaled_points[-1], scaled_points[0], fill="red", width=3)  # Close the loop
 
                               
                #Draw rectangle on canvas
@@ -298,24 +319,50 @@ class ImageEditor:
                     self.canvas.create_line(0+self.x, cy+self.y, canvas_width+cx+self.x, cy+self.y, fill=COLOUR_LINE, dash=(2,2))
                     self.canvas.create_line(cx+self.x, 0+self.y, cx+self.x, canvas_height+cy+self.y, fill=COLOUR_LINE, dash=(2,2))
 
-     #Update canvas with annotated image
+     #Update canvas with annotated image to show annotations
      def update_canvas_annotated_image(self):
          if self.segment.annotated_image is not None:
                #Display image
                self.canvas.delete("all")
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.image_with_contours))
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
+               self.image=self.segment.image_with_contours.copy()
+               self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
+               #Reset all the taken points, boxes and box lists
+               self.rect_start=None
+               self.rect_end=None
+               self.input_point = np.empty((0, 2))
+               self.input_label = np.empty((0,))
+               self.box_list=[]
+
+     #Update canvas performed only if the annotation is accepted
+     def update_canvas_annotated_image_accepted(self):
+         if self.segment.annotated_image is not None:
+               #Display image
+               self.canvas.delete("all")
+               self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.image_with_contours))
+               self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
+               self.image=self.segment.image_with_contours.copy()
+               self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
+               #Reset all the taken points, boxes and box lists
+               self.rect_start=None
+               self.rect_end=None
+               self.input_point = np.empty((0, 2))
+               self.input_label = np.empty((0,))
+               self.box_list=[]
+
+               if self.query_box != None:
+                    self.query_box.destroy()
            
      #Update canvas with annotated image
      def update_canvas_original_image(self):
-         if self.image is not None:
+         if self.original_image is not None:
                #Display image
                self.canvas.delete("all")
                 # Resize the image based on the zoom factor
-               zoomed_width = int(self.image.shape[1] * self.zoom_value)
-               zoomed_height = int(self.image.shape[0] * self.zoom_value)
-               self.zoomed_image = cv2.resize(self.image, (zoomed_width, zoomed_height))
-
+               zoomed_width = int(self.original_image.shape[1] * self.zoom_value)
+               zoomed_height = int(self.original_image.shape[0] * self.zoom_value)
+               self.zoomed_image = cv2.resize(self.original_image, (zoomed_width, zoomed_height))
                #Display image
                #self.canvas.delete("all")
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.zoomed_image))
@@ -349,7 +396,7 @@ class ImageEditor:
 
      #Query method to check if the user is satisfied with the annotation
      def query_user(self):
-          self.image=self.segment.annotated_image_real_size
+          self.image=self.segment.image_with_contours.copy()
           
           self.input_point = np.empty((0, 2))
           self.input_label = np.empty((0,))
@@ -357,13 +404,17 @@ class ImageEditor:
           self.query_box = Toplevel(self.root)
           self.query_box.title("Perform Segmentation")
           
-          message = Label(self.query_box, text="Do you want to perform segmentation?")
+          message = Label(self.query_box, text="Do you want to store segmentation?")
           message.pack(pady=20)
           
-          accept_button = ttk.Button(self.query_box, text="Accept", command=self.save_image)
+          accept_button = ttk.Button(self.query_box, text="Accept", command=self.update_canvas_annotated_image_accepted)
           accept_button.pack(padx=20, pady=10)
           
           # Reject button
+          '''
+          FIX:
+          It is better not to use reset_rectangle in this situation, it is better to use the image that have stored image with previous annotations and mask from previous segmetations.
+          '''
           reject_button = ttk.Button(self.query_box, text="Reject", command=self.reset_rectangle)
           reject_button.pack(padx=20)
 
@@ -374,7 +425,6 @@ class ImageEditor:
           if self.image is not None:
                
                self.image=self.original_image.copy()
-               
                self.rect_start=None
                self.rect_end=None
                self.input_point = np.empty((0, 2))
@@ -414,6 +464,7 @@ class ImageEditor:
                #If polygon exists:
                self.polygon_points.clear()
                self.first_polygon=True
+               self.first_edit_polygon=True
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
      
                if self.query_box != None:

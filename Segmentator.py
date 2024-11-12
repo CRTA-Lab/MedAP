@@ -115,7 +115,7 @@ class SAM_Segmentator:
     def save_prediction(self) -> None:
         if self.prompt_state=="Box" or self.prompt_state=="Point":
             #Create YOLO-compatible annotation
-            print(f"Mask: {self.masks[0]}")
+            #print(f"Mask: {self.masks[0]}")
             h,w =self.masks[0].shape
             y,x =np.where(self.masks[0]>0)
             x_min, x_max = x.min(), x.max()
@@ -198,9 +198,11 @@ class SAM_Segmentator:
     def edit_segmentation(self, rect_start, rect_end) -> None:
         self.rect_start=rect_start
         self.rect_end=rect_end
-        self.resized_mask[self.rect_start[1]:self.rect_end[1], self.rect_start[0]:self.rect_end[0]]=0
+       # print(f"Rect end and start: {self.rect_start}, {self.rect_end}")
         self.resized_mask=cv2.resize(self.resized_mask,(self.image_with_contours.shape[1], self.image_with_contours.shape[0]), interpolation=cv2.INTER_NEAREST)
-        print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
+
+        self.resized_mask[self.rect_start[1]:self.rect_end[1], self.rect_start[0]:self.rect_end[0]]=0
+        #print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
         #Find mask contours on specified mask
         self.contours, self.hierarchy = cv2.findContours(self.resized_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -211,3 +213,41 @@ class SAM_Segmentator:
         self.annotated_image_real_size= cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
         
 
+    #Edit the polygon segmentation
+    def edit_poylgon_segmentation(self, polygon_points) -> None:
+        """
+        Edit segmentation mask using polygon points.
+        """
+        self.polygon_points = polygon_points
+        print(f"Polygon points: {self.polygon_points}")
+
+        # Resize the mask to match the image dimensions, if needed
+        self.resized_mask = cv2.resize(self.resized_mask,(self.image_with_contours.shape[1], self.image_with_contours.shape[0]),interpolation=cv2.INTER_NEAREST)
+
+        # Create a blank mask with the same shape as the resized mask
+        polygon_mask = np.zeros_like(self.resized_mask, dtype=np.uint8)
+
+        # Convert polygon points to numpy array for cv2.fillPoly
+        pts = np.array([self.polygon_points], dtype=np.int32)
+
+        # Draw the polygon on the mask
+        cv2.fillPoly(polygon_mask, pts, color=1)
+
+        # Apply the polygon mask to the resized mask (set region to zero)
+        self.resized_mask[polygon_mask == 1] = 0
+
+        print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
+
+        # Find contours on the updated mask
+        self.contours, self.hierarchy = cv2.findContours(
+            self.resized_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        # Create an image with the mask border
+        self.image_with_contours = self.image.copy()
+        cv2.drawContours(self.image_with_contours, self.contours, -1, (255, 255, 255), 2)
+
+        # Resize back to the original image size, if needed
+        self.annotated_image_real_size = cv2.resize(
+            self.image_with_contours, (self.image_shape[0], self.image_shape[1])
+        )
