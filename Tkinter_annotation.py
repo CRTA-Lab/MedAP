@@ -41,6 +41,9 @@ class ImageEditor:
           self.edit_polygon = False
           self.first_edit_polygon = True
           self.polygon_points = []
+
+          #Segemtation result
+          self.segment = None
           
           #Styling settings for Tkinter
           style = ttk.Style()
@@ -437,24 +440,35 @@ class ImageEditor:
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.box_list=[]
-               annotation_save_path=f"AnnotatedDataset/txt/annotation{self.file_name}.txt"
-               with open(annotation_save_path, "w") as f:
-                    f.write(self.segment.yolo_annotation)
+               if self.segment != None:
+                    annotation_save_path=f"AnnotatedDataset/txt/annotation{self.file_name}.txt"
+                    with open(annotation_save_path, "w") as f:
+                         f.write(self.segment.yolo_annotation)
 
-               mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
-               # Resize the mask to the original image size
-               cv2.imwrite(mask_save_path, (self.segment.resized_mask * 255).astype(np.uint8))
-               
-               # Save the annotated image
-               output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
-               self.annotated_image_real_size= cv2.cvtColor(self.segment.annotated_image_real_size, cv2.COLOR_BGR2RGB)
-               cv2.imwrite(output_image_path, self.annotated_image_real_size)
-               self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-               cv2.imwrite(output_image_path, self.image1)
+                    mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
+                    # Resize the mask to the original image size
+                    cv2.imwrite(mask_save_path, (self.segment.resized_mask * 255).astype(np.uint8))
+                    
+                    # Save the annotated image
+                    output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
+                    self.annotated_image_real_size= cv2.cvtColor(self.segment.annotated_image_real_size, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path, self.annotated_image_real_size)
+                    self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path, self.image1)
+               else:
+                    mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
+                    # Resize the mask to the original image size
+                    cv2.imwrite(mask_save_path, (self.polygon.resized_mask * 255).astype(np.uint8))
+                    
+                    # Save the annotated image
+                    output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
+                    self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path, self.image1)
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.drawing_polygon = False
-               self.query_box.destroy()
+               if self.query_box != None:
+                    self.query_box.destroy()
                self.update_canvas_original_image()
 
      #Reset the rectangle method (in case the user is not satisfied with the bounding box)
