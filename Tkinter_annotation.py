@@ -3,6 +3,7 @@ import numpy as np
 from tkinter import Tk, Label, Canvas, filedialog, messagebox, simpledialog
 from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
+import customtkinter
 import torch
 from Segmentator import SAM_Segmentator
 from Polygon_segmentator import Polygon_Segmentator
@@ -44,29 +45,26 @@ class ImageEditor:
 
           #Segemtation result
           self.segment = None
-          
-          #Styling settings for Tkinter
-          style = ttk.Style()
-          style.theme_use('alt')  # Use a theme that supports customization
-          style.configure('TButton', background=COLOUR_TBUTTON_BG, foreground=COLOUR_TBUTTON_FG, font=('Helvetica', 10), padding=6)
-          style.map('TButton', background=[('active', COLOUR_TBUTTON_BG_ACTIVE)])
+
+          #Apperance mode
+          customtkinter.set_appearance_mode('dark')
 
           #Create GUI elements
           self.canvas=Canvas(root, width=1200, height=800,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
           self.canvas.pack(side="left", padx=10, pady=20)  # Position the canvas on the left side
 
           # Create a frame for the buttons on the right side
-          button_frame = ttk.Frame(root)
+          button_frame =customtkinter.CTkFrame(root)
           button_frame.pack(side="right", fill="y", padx=20)
 
           #Buttons:
           # Group 1: Main actions (Load, Save, Reset, Perform Segmentation, Exit)
-          self.load_button = ttk.Button(button_frame,text="Load", command=self.load_image, style='TButton')
-          self.save_button = ttk.Button(button_frame, text="Save", command=self.save_image, style='TButton')
-          self.reset_button = ttk.Button(button_frame, text="Reset Annotation", command=self.reset_rectangle, style='TButton')
-          self.draw_polygon_button = ttk.Button(button_frame, text="Draw Polygon", command=self.start_polygon_drawing, style="TButton")
-          self.perform_segmentation_button = ttk.Button(button_frame, text="Perform segmentation", command=self.perform_segmentation, style='TButton')
-          self.exit_button = ttk.Button(button_frame, text="Exit", command=root.quit, style='TButton')
+          self.load_button = customtkinter.CTkButton(button_frame,text="Load", command=self.load_image)          
+          self.save_button = customtkinter.CTkButton(button_frame, text="Save", command=self.save_image)
+          self.reset_button = customtkinter.CTkButton(button_frame, text="Reset Annotation", command=self.reset_rectangle)
+          self.draw_polygon_button = customtkinter.CTkButton(button_frame, text="Draw Polygon", command=self.start_polygon_drawing)
+          self.perform_segmentation_button = customtkinter.CTkButton(button_frame, text="Perform segmentation", command=self.perform_segmentation)
+          self.exit_button = customtkinter.CTkButton(button_frame, text="Exit", command=root.quit)
 
           # Arrange these buttons in the grid (1 column, multiple rows)
           self.load_button.grid(row=0, column=0, pady=10, sticky="ew")
@@ -78,20 +76,20 @@ class ImageEditor:
           self.exit_button.grid(row=5, column=0, pady=10, sticky="ew")
 
           # Create a frame for other controls
-          second_frame = ttk.Frame(button_frame)
+          second_frame = customtkinter.CTkFrame(button_frame)
           second_frame.grid(row=7, column=0, pady=20, sticky="ew")
 
           # Zoom controls (Zoom In, Zoom Out)
-          self.zoom_in_button = ttk.Button(second_frame, text="Zoom In", command=self.zoom_in, style='TButton')
-          self.zoom_out_button = ttk.Button(second_frame, text="Zoom Out", command=self.zoom_out, style='TButton')
+          self.zoom_in_button = customtkinter.CTkButton(second_frame, text="Zoom In", command=self.zoom_in)
+          self.zoom_out_button = customtkinter.CTkButton(second_frame, text="Zoom Out", command=self.zoom_out)
 
           # Arrange zoom buttons horizontally
           self.zoom_in_button.grid(row=1, column=0, padx=10, pady=20, sticky="ew")
           self.zoom_out_button.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
 
           # Mask edit controls
-          self.edit_mask_polygon = ttk.Button(second_frame, text="Edit Polygon",command=self.edit_mask_polygon, style="TButton")
-          self.edit_mask_button = ttk.Button(second_frame, text="Edit Mask",command=self.edit_mask, style="TButton")
+          self.edit_mask_polygon = customtkinter.CTkButton(second_frame, text="Edit Polygon",command=self.edit_mask_polygon)
+          self.edit_mask_button = customtkinter.CTkButton(second_frame, text="Edit Mask",command=self.edit_mask)
 
           # Arrrange mask control buttons
           self.edit_mask_polygon.grid(row=2, column=0, padx=10, sticky="ew")
@@ -110,7 +108,8 @@ class ImageEditor:
 
      #Method that loads image file
      def load_image(self):
-        file_path=filedialog.askopenfilename(filetypes=[("Image files"," *.jpeg *.jpg *.png")])     #Find any files to load
+        """Load the image from a computer."""
+        file_path=customtkinter.filedialog.askopenfilename(filetypes=[("Image files"," *.jpeg *.jpg *.png")])     #Find any files to load
         self.file_name=file_path.split("/")[-1]   #Store the file name of image
         self.root.title(self.file_name)
         if file_path:
@@ -131,8 +130,7 @@ class ImageEditor:
 
                #Setup the mask used for polygon drawing
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
-
-     
+    
      #Zoom in method
      def zoom_in(self):
         """Zoom in by increasing the zoom factor."""
@@ -147,6 +145,7 @@ class ImageEditor:
 
      #Define point prompt method
      def edit_mask(self):
+          """Edit a mask created using polygons or SAM"""
           if self.segment is not None or self.edit_polygon==True:
                if self.edit_polygon==True:
                     self.segment.edit_poylgon_segmentation(self.polygon_points)
@@ -160,10 +159,8 @@ class ImageEditor:
                self.update_canvas_annotated_image()
                self.edit_polygon=False
 
-   
-
      def edit_mask_polygon(self):
-          """Start drawin polygon for editing the mask."""
+          """Start drawing polygon for editing the mask."""
           self.edit_polygon=True
           self.drawing_polygon=True
           self.polygon_points.clear()
@@ -171,7 +168,6 @@ class ImageEditor:
                 messagebox.showinfo("Polygon for mask editing", "Create a polygon to edit the mask.")
                 self.first_edit_polygon=False
           
-
      #Start drawing a polygon
      def start_polygon_drawing(self):
           """Start polygon drawing mode."""
@@ -401,7 +397,7 @@ class ImageEditor:
                                             self.prompt_state)
                if self.segment.semgentation_successful:
                     self.update_canvas_annotated_image()
-                    messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")
+                    #messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")
                     self.query_user()
 
      #Query method to check if the user is satisfied with the annotation
@@ -411,13 +407,13 @@ class ImageEditor:
           self.input_point = np.empty((0, 2))
           self.input_label = np.empty((0,))
           self.box_list=[]
-          self.query_box = Toplevel(self.root)
+          self.query_box = customtkinter.CTkToplevel(self.root)
           self.query_box.title("Perform Segmentation")
           
-          message = Label(self.query_box, text="Do you want to store segmentation?")
+          message = customtkinter.CTkLabel(self.query_box, text="Do you want to store segmentation?")
           message.pack(pady=20)
           
-          accept_button = ttk.Button(self.query_box, text="Accept", command=self.update_canvas_annotated_image_accepted)
+          accept_button = customtkinter.CTkButton(self.query_box, text="Accept", command=self.update_canvas_annotated_image_accepted)
           accept_button.pack(padx=20, pady=10)
           
           # Reject button
@@ -425,7 +421,7 @@ class ImageEditor:
           FIX:
           It is better not to use reset_rectangle in this situation, it is better to use the image that have stored image with previous annotations and mask from previous segmetations.
           '''
-          reject_button = ttk.Button(self.query_box, text="Reject", command=self.reset_rectangle)
+          reject_button = customtkinter.CTkButton(self.query_box, text="Reject", command=self.reset_rectangle)
           reject_button.pack(padx=20)
 
           self.update_canvas_annotated_image()
@@ -495,6 +491,6 @@ class ImageEditor:
                
 
 if __name__=="__main__":
-       root=Tk()
+       root=customtkinter.CTk()
        app=ImageEditor(root)
        root.mainloop()
