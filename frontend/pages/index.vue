@@ -1,3 +1,5 @@
 <template>
-    hello
+    <UButton to="mark">
+        Počni označavati
+    </UButton>
 </template>
