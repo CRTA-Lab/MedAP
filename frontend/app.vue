@@ -5,6 +5,15 @@
   </div>
 </template>
 
+<script setup lang="ts">
+
+useHead({
+  titleTemplate: (titleChunk) => {
+    return titleChunk ? `${titleChunk}` : 'MedAP';
+  }
+})
+
+</script>
 
 <style>
 
