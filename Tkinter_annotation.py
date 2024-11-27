@@ -173,6 +173,7 @@ class ImageEditor:
           """Start polygon drawing mode."""
           self.drawing_polygon = True
           self.polygon_points.clear()
+          self.segment = None
           if self.first_polygon:
                self.file_name=simpledialog.askstring("Polygon Mode", "Click on the canvas to add vertices. Double-click to complete. \n Enter the filename (without extension):")
                self.first_polygon=False

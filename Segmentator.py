@@ -222,7 +222,6 @@ class SAM_Segmentator:
         print(f"Polygon points: {self.polygon_points}")
 
         # Resize the mask to match the image dimensions, if needed
-        self.resized_mask = cv2.resize(self.resized_mask,(self.image_with_contours.shape[1], self.image_with_contours.shape[0]),interpolation=cv2.INTER_NEAREST)
 
         # Create a blank mask with the same shape as the resized mask
         polygon_mask = np.zeros_like(self.resized_mask, dtype=np.uint8)
@@ -235,6 +234,7 @@ class SAM_Segmentator:
 
         # Apply the polygon mask to the resized mask (set region to zero)
         self.resized_mask[polygon_mask == 1] = 0
+        self.resized_mask = cv2.resize(self.resized_mask,(self.image_with_contours.shape[1], self.image_with_contours.shape[0]),interpolation=cv2.INTER_NEAREST)
 
         print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
 
@@ -245,9 +245,10 @@ class SAM_Segmentator:
 
         # Create an image with the mask border
         self.image_with_contours = self.image.copy()
+        #self.image_with_contours=cv2.resize(self.image_with_contours,(self.image_shape[0], self.image_shape[1]))
         cv2.drawContours(self.image_with_contours, self.contours, -1, (255, 255, 255), 2)
+        #self.image_with_contours=cv2.resize(self.image_with_contours,(self.image.shape[1], self.image.shape[0]))
+
 
         # Resize back to the original image size, if needed
-        self.annotated_image_real_size = cv2.resize(
-            self.image_with_contours, (self.image_shape[0], self.image_shape[1])
-        )
+        self.annotated_image_real_size = cv2.resize(self.image_with_contours, (self.image_shape[0], self.image_shape[1]))
