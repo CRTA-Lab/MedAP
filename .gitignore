@@ -10,3 +10,6 @@
 /SAM_Med2D
 /ProstateExact
 /Polygon_Tkinter_annotator.py
+
+#Django files
+__pycache__/
