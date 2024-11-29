@@ -11,6 +11,11 @@
                 </select>
             </div>
         </div>
+        <div class="setting-section">
+            <UButton to="/">
+                LOGOUT
+            </UButton>
+        </div>
     </div>
 </template>
 

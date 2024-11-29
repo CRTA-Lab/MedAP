@@ -28,6 +28,6 @@ const items = [{
 }, {
     label: 'Brisanje korisnika',
     icon: 'i-heroicons-user',
-    content: 'Svaka označena slika ima zapis (ime korisnika) koji je označio tu sliku. Brisanjem korisnika ta se oznaka postavlja na praznu vrijednost (NULL). Međutim, slika ostaje označena.'
+    content: 'Svaka označena slika ima zapis (ime korisnika) koji je označio tu sliku. Brisanjem korisnika ta se oznaka postavlja na praznu vrijednost (NULL). Međutim, slika ostaje označena. Za brisanje korisnika, kontaktirajte admina.'
 }]
 </script>
