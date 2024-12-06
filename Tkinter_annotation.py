@@ -431,7 +431,7 @@ class ImageEditor:
      def save_image(self):
           if self.image is not None:
                
-               self.image=self.original_image.copy()
+               #self.image=self.original_image.copy()
                self.rect_start=None
                self.rect_end=None
                self.input_point = np.empty((0, 2))
@@ -464,6 +464,7 @@ class ImageEditor:
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.drawing_polygon = False
+               self.image=self.original_image.copy()
                if self.query_box != None:
                     self.query_box.destroy()
                self.update_canvas_original_image()
