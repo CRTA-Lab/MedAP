@@ -35,6 +35,8 @@ class ImageEditor:
           self.prompt_state=None
           #Initialize query box
           self.query_box=None
+          #Tkinter font size
+          self.font_size=22
 
           # Polygon drawing state
           self.drawing_polygon = False
@@ -50,7 +52,7 @@ class ImageEditor:
           customtkinter.set_appearance_mode('dark')
 
           #Create GUI elements
-          self.canvas=Canvas(root, width=1200, height=800,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
+          self.canvas=Canvas(root, width=1300, height=850,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
           self.canvas.pack(side="left", padx=10, pady=20)  # Position the canvas on the left side
 
           # Create a frame for the buttons on the right side
@@ -59,12 +61,12 @@ class ImageEditor:
 
           #Buttons:
           # Group 1: Main actions (Load, Save, Reset, Perform Segmentation, Exit)
-          self.load_button = customtkinter.CTkButton(button_frame,text="Load", command=self.load_image)          
-          self.save_button = customtkinter.CTkButton(button_frame, text="Save", command=self.save_image)
-          self.reset_button = customtkinter.CTkButton(button_frame, text="Reset Annotation", command=self.reset_rectangle)
-          self.draw_polygon_button = customtkinter.CTkButton(button_frame, text="Draw Polygon", command=self.start_polygon_drawing)
-          self.perform_segmentation_button = customtkinter.CTkButton(button_frame, text="Perform segmentation", command=self.perform_segmentation)
-          self.exit_button = customtkinter.CTkButton(button_frame, text="Exit", command=root.quit)
+          self.load_button = customtkinter.CTkButton(button_frame,text="Load", font=(self.font_size,self.font_size), command=self.load_image)          
+          self.save_button = customtkinter.CTkButton(button_frame, text="Save", font=(self.font_size,self.font_size), command=self.save_image)
+          self.reset_button = customtkinter.CTkButton(button_frame, text="Reset Annotation", font=(self.font_size,self.font_size), command=self.reset_rectangle)
+          self.draw_polygon_button = customtkinter.CTkButton(button_frame, text="Draw Polygon", font=(self.font_size,self.font_size), command=self.start_polygon_drawing)
+          self.perform_segmentation_button = customtkinter.CTkButton(button_frame, text="Perform segmentation", font=(self.font_size,self.font_size), command=self.perform_segmentation)
+          self.exit_button = customtkinter.CTkButton(button_frame, text="Exit", font=(self.font_size,self.font_size), command=root.quit)
 
           # Arrange these buttons in the grid (1 column, multiple rows)
           self.load_button.grid(row=0, column=0, pady=10, sticky="ew")
@@ -80,16 +82,16 @@ class ImageEditor:
           second_frame.grid(row=7, column=0, pady=20, sticky="ew")
 
           # Zoom controls (Zoom In, Zoom Out)
-          self.zoom_in_button = customtkinter.CTkButton(second_frame, text="Zoom In", command=self.zoom_in)
-          self.zoom_out_button = customtkinter.CTkButton(second_frame, text="Zoom Out", command=self.zoom_out)
+          self.zoom_in_button = customtkinter.CTkButton(second_frame, text="Zoom In", font=(self.font_size,self.font_size), command=self.zoom_in)
+          self.zoom_out_button = customtkinter.CTkButton(second_frame, text="Zoom Out", font=(self.font_size,self.font_size), command=self.zoom_out)
 
           # Arrange zoom buttons horizontally
           self.zoom_in_button.grid(row=1, column=0, padx=10, pady=20, sticky="ew")
           self.zoom_out_button.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
 
           # Mask edit controls
-          self.edit_mask_polygon = customtkinter.CTkButton(second_frame, text="Edit Polygon",command=self.edit_mask_polygon)
-          self.edit_mask_button = customtkinter.CTkButton(second_frame, text="Edit Mask",command=self.edit_mask)
+          self.edit_mask_polygon = customtkinter.CTkButton(second_frame, text="Edit Polygon", font=(self.font_size,self.font_size), command=self.edit_mask_polygon)
+          self.edit_mask_button = customtkinter.CTkButton(second_frame, text="Edit Mask", font=(self.font_size,self.font_size), command=self.edit_mask)
 
           # Arrrange mask control buttons
           self.edit_mask_polygon.grid(row=2, column=0, padx=10, sticky="ew")
@@ -175,7 +177,8 @@ class ImageEditor:
           self.polygon_points.clear()
           self.segment = None
           if self.first_polygon:
-               self.file_name=simpledialog.askstring("Polygon Mode", "Click on the canvas to add vertices. Double-click to complete. \n Enter the filename (without extension):")
+               messagebox.showinfo("Polygon mode", "Click on the canvas to add vertices. Double-click to complete.")
+               #self.file_name=simpledialog.askstring("Polygon Mode", "Click on the canvas to add vertices. Double-click to complete. \n Enter the filename (without extension):")
                self.first_polygon=False
 
      #Complete a polygon creation
@@ -380,7 +383,7 @@ class ImageEditor:
      def perform_segmentation(self):
           if self.image is not None:
                #Set the string name of saved annotations
-               self.file_name=simpledialog.askstring("Annotation", "Enter the filename (without extension):")
+               #self.file_name=simpledialog.askstring("Annotation", "Enter the filename (without extension):")
                # #Check the prompt state based od starting and ending point
                if self.rect_start == self.rect_end:
                     self.prompt_state="Point"
