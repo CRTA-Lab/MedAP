@@ -132,6 +132,11 @@ class ImageEditor:
 
                #Setup the mask used for polygon drawing
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
+
+               self.drawing_polygon = True
+               self.polygon_points.clear()
+
+
     
      #Zoom in method
      def zoom_in(self):
@@ -414,10 +419,10 @@ class ImageEditor:
           self.query_box = customtkinter.CTkToplevel(self.root)
           self.query_box.title("Perform Segmentation")
           
-          message = customtkinter.CTkLabel(self.query_box, text="Do you want to store segmentation?")
+          message = customtkinter.CTkLabel(self.query_box, text="Do you want to store segmentation?",font=(self.font_size,self.font_size))
           message.pack(pady=20)
           
-          accept_button = customtkinter.CTkButton(self.query_box, text="Accept", command=self.update_canvas_annotated_image_accepted)
+          accept_button = customtkinter.CTkButton(self.query_box, text="Accept", font=(self.font_size,self.font_size), command=self.update_canvas_annotated_image_accepted)
           accept_button.pack(padx=20, pady=10)
           
           # Reject button
@@ -425,7 +430,7 @@ class ImageEditor:
           FIX:
           It is better not to use reset_rectangle in this situation, it is better to use the image that have stored image with previous annotations and mask from previous segmetations.
           '''
-          reject_button = customtkinter.CTkButton(self.query_box, text="Reject", command=self.reset_rectangle)
+          reject_button = customtkinter.CTkButton(self.query_box, text="Reject", font=(self.font_size,self.font_size), command=self.reset_rectangle)
           reject_button.pack(padx=20)
 
           self.update_canvas_annotated_image()
