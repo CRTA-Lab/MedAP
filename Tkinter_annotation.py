@@ -61,7 +61,7 @@ class ImageEditor:
 
           #Buttons:
           # Group 1: Main actions (Load, Save, Reset, Perform Segmentation, Exit)
-          self.load_button = customtkinter.CTkButton(button_frame,text="Load", font=(self.font_size,self.font_size), command=self.load_image)          
+          self.load_button = customtkinter.CTkButton(button_frame,text="Load", font=(self.font_size,self.font_size), command=self.load_images)          
           self.save_button = customtkinter.CTkButton(button_frame, text="Save", font=(self.font_size,self.font_size), command=self.save_image)
           self.reset_button = customtkinter.CTkButton(button_frame, text="Reset Annotation", font=(self.font_size,self.font_size), command=self.reset_rectangle)
           self.draw_polygon_button = customtkinter.CTkButton(button_frame, text="Draw Polygon", font=(self.font_size,self.font_size), command=self.start_polygon_drawing)
@@ -107,37 +107,63 @@ class ImageEditor:
           self.canvas.bind("<Button-3>", self.on_mouse2_down)
           self.canvas.bind("<ButtonRelease-3>", self.on_mouse2_up)
 
+     #Method that loads all image files
+     def load_images(self):
+          """Load multiple images from the computer"""
+          file_paths=customtkinter.filedialog.askopenfilenames(filetypes=[("Image files"," *.jpeg *.jpg *.png")])  #Select multiple images to annotate
+          if file_paths:
+               self.image_paths=list(file_paths)  
+               self.current_image_index=0    #Image counter
+               self.load_current_image()
 
      #Method that loads image file
-     def load_image(self):
-        """Load the image from a computer."""
-        file_path=customtkinter.filedialog.askopenfilename(filetypes=[("Image files"," *.jpeg *.jpg *.png")])     #Find any files to load
-        self.file_name=file_path.split("/")[-1]   #Store the file name of image
-        self.root.title(self.file_name)
-        if file_path:
-               #Load image with OpenCV
-               self.image=cv2.imread(file_path)
-               self.image=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-               #Store the original image shape
-               self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
-               #Copy the original image of original shape
-               self.original_image=self.image.copy()
-               self.zoom_value=1.0
-               self.update_canvas()
+     def load_current_image(self):
+          """Load the image based on the current_image_index."""
+          if self.current_image_index < len(self.image_paths):
+               file_path=self.image_paths[self.current_image_index]
+               self.file_name=file_path.split("/")[-1]   #Store the file name of image
+               self.root.title(self.file_name)
+               if file_path:
+                    #Load image with OpenCV
+                    self.image=cv2.imread(file_path)
+                    self.image=cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                    #Store the original image shape
+                    self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
+                    #Copy the original image of original shape
+                    self.original_image=self.image.copy()
+                    self.zoom_value=1.0
+                    self.update_canvas()
 
-               #Load arrays that are used if points are used
-               self.input_point = np.empty((0, 2))
-               self.input_label = np.empty((0,))
-               self.box_list=[]
+                    #Load arrays that are used if points are used
+                    self.input_point = np.empty((0, 2))
+                    self.input_label = np.empty((0,))
+                    self.box_list=[]
 
-               #Setup the mask used for polygon drawing
-               self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
+                    #Setup the mask used for polygon drawing
+                    self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
+                    self.drawing_polygon = False
+                    self.polygon_points.clear()
+          else:
+               self.clear_all_images()
+               messagebox.showwarning("Annotation info.","There is no more images to annotate!")
 
-               self.drawing_polygon = True
-               self.polygon_points.clear()
+     #Method that clears the annoator if there is no more images to annoatate
+     def clear_all_images(self):
+          """Clear all images and reset variables when there are no more images to process."""
+          self.image = None
+          self.original_image = None
+          self.annotated_image_real_size = None
+          self.mask = None
+          self.file_name = None
+          self.image_paths = []
+          self.current_image_index = 0
+          self.zoom_value = 1.0
 
+          # Clear the canvas or update the GUI accordingly
+          self.canvas.delete("all")
 
-    
+          # Reset GUI window title or provide feedback
+          self.root.title("No Images Loaded")
      #Zoom in method
      def zoom_in(self):
         """Zoom in by increasing the zoom factor."""
@@ -437,8 +463,8 @@ class ImageEditor:
 
      #Save the image method
      def save_image(self):
+          """Save the current image and move to next one."""
           if self.image is not None:
-               
                #self.image=self.original_image.copy()
                self.rect_start=None
                self.rect_end=None
@@ -469,13 +495,24 @@ class ImageEditor:
                     output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
                     self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path, self.image1)
+               self.rect_start=None
+               self.rect_end=None
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
+               self.box_list=[]
+               self.polygon_points.clear()
                self.drawing_polygon = False
+               self.first_polygon=True
+               self.first_edit_polygon=True
+               self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
                self.image=self.original_image.copy()
                if self.query_box != None:
                     self.query_box.destroy()
-               self.update_canvas_original_image()
+               
+               #self.update_canvas_original_image()
+               # Move to the next image
+               self.current_image_index += 1
+               self.load_current_image()
 
      #Reset the rectangle method (in case the user is not satisfied with the bounding box)
      def reset_rectangle(self):
