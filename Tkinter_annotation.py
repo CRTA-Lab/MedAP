@@ -44,7 +44,7 @@ class ImageEditor:
           self.edit_polygon = False
           self.first_edit_polygon = True
           self.polygon_points = []
-
+          self.previous_mask=np.array([])
           #Segemtation result
           self.segment = None
 
@@ -92,10 +92,12 @@ class ImageEditor:
           # Mask edit controls
           self.edit_mask_polygon = customtkinter.CTkButton(second_frame, text="Edit Polygon", font=(self.font_size,self.font_size), command=self.edit_mask_polygon)
           self.edit_mask_button = customtkinter.CTkButton(second_frame, text="Edit Mask", font=(self.font_size,self.font_size), command=self.edit_mask)
+          self.edit_mask_SAM_button = customtkinter.CTkButton(second_frame, text="Edit Mask SAM", font=(self.font_size,self.font_size), command=self.edit_mask_SAM)
 
           # Arrrange mask control buttons
           self.edit_mask_polygon.grid(row=2, column=0, padx=10, sticky="ew")
           self.edit_mask_button.grid(row=2, column=1, padx=10, sticky="ew")
+          self.edit_mask_SAM_button.grid(row=3, column=0, pady=20, padx=10, sticky="ew")
 
           # Bind mouse events for rectangle drawing (unchanged)
           self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
@@ -379,6 +381,11 @@ class ImageEditor:
      #Update canvas performed only if the annotation is accepted
      def update_canvas_annotated_image_accepted(self):
          if self.segment.annotated_image is not None:
+               #Modify mask if neccessary:
+               print(self.previous_mask)
+               if self.previous_mask.size!=0 :
+                    self.segment.resized_mask=self.previous_mask-self.segment.resized_mask
+                    self.previous_mask=[]
                #Display image
                self.canvas.delete("all")
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.image_with_contours))
@@ -435,6 +442,32 @@ class ImageEditor:
                     #messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")
                     self.query_user()
 
+     #Method to edit mask using SAM
+     def edit_mask_SAM(self):
+          if self.image is not None:
+               self.previous_mask=self.segment.resized_mask
+               #Set the string name of saved annotations
+               #self.file_name=simpledialog.askstring("Annotation", "Enter the filename (without extension):")
+               # #Check the prompt state based od starting and ending point
+               if self.rect_start == self.rect_end:
+                    self.prompt_state="Point"
+               elif self.rect_start != self.rect_end:
+                    self.prompt_state="Box"
+               #Show the selected prompt
+               messagebox.showinfo("Select prompt", f"Selected prompt is {self.prompt_state}!")
+               print(self.input_point)
+               print(self.input_label)
+               self.segment=SAM_Segmentator(self.zoomed_image, 
+                                            self.file_name, 
+                                            self.input_point, 
+                                            self.input_label , 
+                                            self.image_shape, 
+                                            self.prompt_state)
+               if self.segment.semgentation_successful:
+                    self.update_canvas_annotated_image()
+                    #messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")
+                    self.query_user()
+          pass
      #Query method to check if the user is satisfied with the annotation
      def query_user(self):
           self.image=self.segment.image_with_contours.copy()
