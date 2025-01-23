@@ -18,7 +18,7 @@ def flip(image_path, flip_axis:bool=True):
     
 def flip_random(image_path):
     '''
-    Flips an image over a random axis.
+    Flips an image over x axis, y axis or both of them.
     
     Arguments:
         image_path (str): path to image
@@ -44,7 +44,7 @@ def blur(image_path, blur_val:int=5):
     
 def shift(image_path, tx:int=1, ty:int=1):
     '''
-    Shifts an image in x and y direction.
+    Shifts an image in x and y direction. Remves black area after shifting.
     
     Arguments:
         image_path (str): path to image
