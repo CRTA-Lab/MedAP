@@ -107,9 +107,10 @@ if __name__=='__main__':
     path = 'images/car.png'
     
     #augmented = flip(path, -1)
-    #augmented = flip_random(path)
-    #augmented = blur(path, 5)
-    augmented = shift(path, 100, 100)
+    augmented = flip_random(path)
+    #augmented = blur(path, 15)
+    #augmented = shift(path, 100, 100)
+    #augmented = rotate(path, 90)
     cv2.imshow('augmented', augmented)
     cv2.waitKey(0)
     
