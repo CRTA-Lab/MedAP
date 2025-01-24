@@ -9,6 +9,8 @@ from Segmentator import SAM_Segmentator
 from Polygon_segmentator import Polygon_Segmentator
 from constants import *
 
+DATASET_NUM = 60
+
 class ImageEditor:
      def __init__(self, root):
           self.root=root
@@ -126,8 +128,8 @@ class ImageEditor:
           if self.current_image_index < len(self.image_paths):
                file_path=self.image_paths[self.current_image_index]
                self.file_name=file_path.split("/")[-1]   #Store the file name of image
-               self.original_image_name=f"microUS_60_img_slice_{self.annotated_image_conunter}"
-               self.mask_image_name=f"microUS_60_gt_slice_{self.annotated_image_conunter}"
+               self.original_image_name=f"microUS_{DATASET_NUM}_img_slice_{self.annotated_image_conunter}"
+               self.mask_image_name=f"microUS_{DATASET_NUM}_gt_slice_{self.annotated_image_conunter}"
                self.annotated_image_conunter+=1
                self.root.title(self.original_image_name)
                if file_path:
@@ -529,7 +531,8 @@ class ImageEditor:
 
                     #Save original image
                     output_image_path_original=f"AnnotatedDataset/images_without_annotations/{self.original_image_name}.png"
-                    cv2.imwrite(output_image_path_original, self.original_image)
+                    self.original_image_rgb = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path_original, self.original_image_rgb)
                else:
                     mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
                     mask_save_path=f"AnnotatedDataset/masks/{self.mask_image_name}.png"
@@ -544,7 +547,9 @@ class ImageEditor:
 
                     #Save original image
                     output_image_path_original=f"AnnotatedDataset/images_without_annotations/{self.original_image_name}.png"
-                    cv2.imwrite(output_image_path_original, self.original_image)
+                    self.original_image_rgb = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path_original, self.original_image_rgb)
+                    
                self.rect_start=None
                self.rect_end=None
                self.input_point = np.empty((0, 2))
