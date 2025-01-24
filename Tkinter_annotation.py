@@ -47,6 +47,8 @@ class ImageEditor:
           self.previous_mask=np.array([])
           #Segemtation result
           self.segment = None
+          #Annotated image conunter
+          self.annotated_image_conunter=0
 
           #Apperance mode
           customtkinter.set_appearance_mode('dark')
@@ -124,7 +126,10 @@ class ImageEditor:
           if self.current_image_index < len(self.image_paths):
                file_path=self.image_paths[self.current_image_index]
                self.file_name=file_path.split("/")[-1]   #Store the file name of image
-               self.root.title(self.file_name)
+               self.original_image_name=f"microUS_60_img_slice_{self.annotated_image_conunter}"
+               self.mask_image_name=f"microUS_60_gt_slice_{self.annotated_image_conunter}"
+               self.annotated_image_conunter+=1
+               self.root.title(self.original_image_name)
                if file_path:
                     #Load image with OpenCV
                     self.image=cv2.imread(file_path)
@@ -509,25 +514,37 @@ class ImageEditor:
                     with open(annotation_save_path, "w") as f:
                          f.write(self.segment.yolo_annotation)
 
-                    mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
+                    #mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
+                    mask_save_path=f"AnnotatedDataset/masks/{self.mask_image_name}.png"
                     # Resize the mask to the original image size
                     cv2.imwrite(mask_save_path, (self.segment.resized_mask * 255).astype(np.uint8))
                     
                     # Save the annotated image
-                    output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
+                    #output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
+                    output_image_path=f"AnnotatedDataset/annotations/{self.original_image_name}.png"
                     self.annotated_image_real_size= cv2.cvtColor(self.segment.annotated_image_real_size, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path, self.annotated_image_real_size)
                     self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path, self.image1)
+
+                    #Save original image
+                    output_image_path_original=f"AnnotatedDataset/images_without_annotations/{self.original_image_name}.png"
+                    cv2.imwrite(output_image_path_original, self.original_image)
                else:
                     mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
+                    mask_save_path=f"AnnotatedDataset/masks/{self.mask_image_name}.png"
                     # Resize the mask to the original image size
                     cv2.imwrite(mask_save_path, (self.polygon.resized_mask * 255).astype(np.uint8))
                     
                     # Save the annotated image
-                    output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
+                    #output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
+                    output_image_path=f"AnnotatedDataset/annotations/{self.original_image_name}.png"
                     self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path, self.image1)
+
+                    #Save original image
+                    output_image_path_original=f"AnnotatedDataset/images_without_annotations/{self.original_image_name}.png"
+                    cv2.imwrite(output_image_path_original, self.original_image)
                self.rect_start=None
                self.rect_end=None
                self.input_point = np.empty((0, 2))
