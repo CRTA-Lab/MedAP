@@ -9,6 +9,8 @@ from Segmentator import SAM_Segmentator
 from Polygon_segmentator import Polygon_Segmentator
 from constants import *
 
+import os
+
 DATASET_NUM = 60
 
 class ImageEditor:
@@ -115,12 +117,23 @@ class ImageEditor:
 
      #Method that loads all image files
      def load_images(self):
-          """Load multiple images from the computer"""
-          file_paths=customtkinter.filedialog.askopenfilenames(filetypes=[("Image files"," *.jpeg *.jpg *.png")])  #Select multiple images to annotate
-          if file_paths:
-               self.image_paths=list(file_paths)  
-               self.current_image_index=0    #Image counter
-               self.load_current_image()
+        """Load multiple images from a selected directory."""
+        directory_path = customtkinter.filedialog.askdirectory(title="Select a directory containing images")
+        if directory_path:
+            # Filter for valid image files
+            valid_extensions = {".jpeg", ".jpg", ".png"}
+            self.image_paths = [
+                os.path.join(directory_path, file)
+                for file in os.listdir(directory_path)
+                if os.path.splitext(file)[1].lower() in valid_extensions
+            ]
+            
+            if self.image_paths:
+                self.image_paths.sort()  # Optional: Sort files alphabetically
+                self.current_image_index = 0  # Image counter
+                self.load_current_image()
+            else:
+                print("No valid image files found in the selected directory.")
 
      #Method that loads image file
      def load_current_image(self):
