@@ -115,7 +115,6 @@ class ImageEditor:
           self.canvas.bind("<Button-3>", self.on_mouse2_down)
           self.canvas.bind("<ButtonRelease-3>", self.on_mouse2_up)
 
-     #Method that loads all image files
      def load_images(self):
         """Load multiple images from a selected directory."""
         directory_path = customtkinter.filedialog.askdirectory(title="Select a directory containing images")
@@ -129,8 +128,8 @@ class ImageEditor:
             ]
             
             if self.image_paths:
-                self.image_paths.sort()  # Optional: Sort files alphabetically
-                self.current_image_index = 0  # Image counter
+                self.image_paths.sort()
+                self.current_image_index = 0
                 self.load_current_image()
             else:
                 print("No valid image files found in the selected directory.")
