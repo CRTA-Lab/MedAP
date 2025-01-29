@@ -11,7 +11,7 @@ from constants import *
 
 import os
 
-DATASET_NUM = 61
+DATASET_NUM = 69
 
 class ImageEditor:
      def __init__(self, root):
