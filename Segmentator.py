@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 from segment_anything import SamPredictor, sam_model_registry
-from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
+#from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
 from argparse import Namespace
 
 from Segmentation_helper import create_directory
@@ -43,6 +43,7 @@ class SAM_Segmentator:
         self.device : str = "cuda" if torch.cuda.is_available() else "cpu"
 
         #Setup model
+        #sam_checkpoint: str = "sam_vit_h_4b8939.pth"
         sam_checkpoint: str = "sam_vit_b_01ec64.pth"
         #sam_checkpoint: str = "sam-med2d_b.pth"
         model_type: str = "vit_b"

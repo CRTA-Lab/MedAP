@@ -5,6 +5,7 @@ from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
 import customtkinter
 import torch
+import time
 from Segmentator import SAM_Segmentator
 from Polygon_segmentator import Polygon_Segmentator
 from constants import *
@@ -603,8 +604,21 @@ class ImageEditor:
                if self.query_box != None:
                     self.query_box.destroy()
                
+#Define the Splash screen at the start
+def show_splash():
+     splash = Tk()
+     splash.overrideredirect(True)
+     image=Image.open("/home/istrazivac/LukaSiktar/PRONOBIS/crta_sam_segmentator/images/MedAP.png")
+     splash.geometry(f"{image.size[0]}x{image.size[1]}+{int(splash.winfo_screenwidth()/2)-int(image.size[0]/2)}+{int(splash.winfo_screenheight()/2)-int(image.size[1]/2)}")
+     photo=ImageTk.PhotoImage(image=image)
+     label=Label(splash, image=photo)
+     label.pack()
+
+     splash.after(3000, splash.destroy)
+     splash.mainloop()
 
 if __name__=="__main__":
+       show_splash()
        root=customtkinter.CTk()
        app=ImageEditor(root)
        root.mainloop()
