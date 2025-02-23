@@ -3,7 +3,7 @@ import numpy as np
 from tkinter import Tk, Canvas, filedialog, messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
-from constants import *
+from soruce_files.constants import *
 
 class ImageEditor:
     def __init__(self, root):

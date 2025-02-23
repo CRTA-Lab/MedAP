@@ -6,7 +6,7 @@ from segment_anything import SamPredictor, sam_model_registry
 #from SAM_Med2D.segment_anything import sam_model_registry as sammed_model_registry
 from argparse import Namespace
 
-from Segmentation_helper import create_directory
+from soruce_files.Segmentation_helper import create_directory
 
 
 #Segmentator class

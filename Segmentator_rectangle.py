@@ -3,10 +3,10 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from segment_anything import sam_model_registry, SamPredictor
-from Segmentation_helper import show_mask, create_directory
+from soruce_files.Segmentation_helper import show_mask, create_directory
 import warnings
 
-from constants import *
+from soruce_files.constants import *
 
 warnings.filterwarnings("ignore", message="The value of the smallest subnormal")
 

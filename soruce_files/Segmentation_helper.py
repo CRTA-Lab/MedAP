@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from constants import *
+from soruce_files.constants import *
 
 #Functions that create masks/annotations on images
 def show_mask(mask, ax, random_color: bool = False) -> None:

@@ -6,9 +6,9 @@ from PIL import Image, ImageTk
 import customtkinter
 import torch
 import time
-from Segmentator import SAM_Segmentator
-from Polygon_segmentator import Polygon_Segmentator
-from constants import *
+from soruce_files.Segmentator import SAM_Segmentator
+from soruce_files.Polygon_segmentator import Polygon_Segmentator
+from soruce_files.constants import *
 
 import os
 

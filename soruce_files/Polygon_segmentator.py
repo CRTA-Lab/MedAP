@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from Segmentation_helper import create_directory
+from soruce_files.Segmentation_helper import create_directory
 
 #Polygon segmentator class
 class Polygon_Segmentator:
