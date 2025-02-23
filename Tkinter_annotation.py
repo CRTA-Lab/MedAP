@@ -15,7 +15,7 @@ import os
 DATASET_NUM = 69
 
 class ImageEditor:
-     def __init__(self, root):
+     def __init__(self, root : customtkinter.CTk):
           self.root=root
           self.root.title("Image Editor")
           self.root.configure(bg=COLOUR_ROOT_BG)
@@ -41,13 +41,13 @@ class ImageEditor:
           #Initialize query box
           self.query_box=None
           #Tkinter font size
-          self.font_size=22
+          self.font_size=FONT_SIZE
 
           # Polygon drawing state
           self.drawing_polygon = False
-          self.first_polygon = True
+          self.ready_for_first_polygon = True
           self.edit_polygon = False
-          self.first_edit_polygon = True
+          self.ready_for_first_edit_polygon = True
           self.polygon_points = []
           self.previous_mask=np.array([])
           #Segemtation result
@@ -59,7 +59,7 @@ class ImageEditor:
           customtkinter.set_appearance_mode('dark')
 
           #Create GUI elements
-          self.canvas=Canvas(root, width=1300, height=850,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
+          self.canvas=Canvas(root, width=GUI_WIDTH, height=GUI_HEIGHT,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
           self.canvas.pack(side="left", padx=10, pady=20)  # Position the canvas on the left side
 
           # Create a frame for the buttons on the right side
@@ -116,7 +116,7 @@ class ImageEditor:
           self.canvas.bind("<Button-3>", self.on_mouse2_down)
           self.canvas.bind("<ButtonRelease-3>", self.on_mouse2_up)
 
-     def load_images(self):
+     def load_images(self) -> None:
         """Load multiple images from a selected directory."""
         directory_path = customtkinter.filedialog.askdirectory(title="Select a directory containing images")
         if directory_path:
@@ -136,8 +136,9 @@ class ImageEditor:
                 print("No valid image files found in the selected directory.")
 
      #Method that loads image file
-     def load_current_image(self):
+     def load_current_image(self) -> None:
           """Load the image based on the current_image_index."""
+          torch.cuda.empty_cache()
           if self.current_image_index < len(self.image_paths):
                file_path=self.image_paths[self.current_image_index]
                self.file_name=file_path.split("/")[-1]   #Store the file name of image
@@ -170,7 +171,7 @@ class ImageEditor:
                messagebox.showwarning("Annotation info.","There is no more images to annotate!")
 
      #Method that clears the annoator if there is no more images to annoatate
-     def clear_all_images(self):
+     def clear_all_images(self) -> None:
           """Clear all images and reset variables when there are no more images to process."""
           self.image = None
           self.original_image = None
@@ -187,19 +188,19 @@ class ImageEditor:
           # Reset GUI window title or provide feedback
           self.root.title("No Images Loaded")
      #Zoom in method
-     def zoom_in(self):
+     def zoom_in(self) -> None:
         """Zoom in by increasing the zoom factor."""
         self.zoom_value = min(self.zoom_value + self.zoom_factor, self.max_zoom)
         self.update_canvas()
 
      #Zoom out method
-     def zoom_out(self):
+     def zoom_out(self) -> None:
         """Zoom out by decreasing the zoom factor."""
         self.zoom_value = max(self.zoom_value - self.zoom_factor, self.min_zoom)
         self.update_canvas()
 
      #Define point prompt method
-     def edit_mask(self):
+     def edit_mask(self) -> None:
           """Edit a mask created using polygons or SAM"""
           if self.segment is not None or self.edit_polygon==True:
                if self.edit_polygon==True:
@@ -214,28 +215,28 @@ class ImageEditor:
                self.update_canvas_annotated_image()
                self.edit_polygon=False
 
-     def edit_mask_polygon(self):
+     def edit_mask_polygon(self) -> None:
           """Start drawing polygon for editing the mask."""
           self.edit_polygon=True
           self.drawing_polygon=True
           self.polygon_points.clear()
-          if self.first_edit_polygon:
+          if self.ready_for_first_edit_polygon:
                 messagebox.showinfo("Polygon for mask editing", "Create a polygon to edit the mask.")
-                self.first_edit_polygon=False
+                self.ready_for_first_edit_polygon=False
           
      #Start drawing a polygon
-     def start_polygon_drawing(self):
+     def start_polygon_drawing(self) -> None:
           """Start polygon drawing mode."""
           self.drawing_polygon = True
           self.polygon_points.clear()
           self.segment = None
-          if self.first_polygon:
+          if self.ready_for_first_polygon:
                messagebox.showinfo("Polygon mode", "Click on the canvas to add vertices. Double-click to complete.")
                #self.file_name=simpledialog.askstring("Polygon Mode", "Click on the canvas to add vertices. Double-click to complete. \n Enter the filename (without extension):")
-               self.first_polygon=False
+               self.ready_for_first_polygon=False
 
      #Complete a polygon creation
-     def complete_polygon(self):
+     def complete_polygon(self) -> None:
           """Complete the polygon and stop polygon drawing mode."""
           if len(self.polygon_points) < 3:
                messagebox.showwarning("Polygon Error", "At least 3 points are needed to complete a polygon.")
@@ -252,7 +253,7 @@ class ImageEditor:
           #print("Polygon points:", self.polygon_points)  
 
      #Mouse action methods:
-     def on_mouse_down(self, event):
+     def on_mouse_down(self, event) -> None:
          if self.image is not None:
                if self.drawing_polygon is False:
                     self.rect_start=(event.x-self.x, event.y-self.y) 
@@ -262,7 +263,7 @@ class ImageEditor:
                     self.update_canvas()
 
      #Compplete the polygon on double click
-     def on_double_click(self, event):
+     def on_double_click(self, event) -> None:
         """Complete the polygon when double-clicked."""
         self.number_of_polygons=1
         if self.drawing_polygon:
@@ -274,12 +275,12 @@ class ImageEditor:
                                              self.mask)
             self.polygon.create_polygon()
 
-     def on_mouse_drag(self, event):
+     def on_mouse_drag(self, event) -> None:
          if self.rect_start:
               self.rect_end=(event.x-self.x, event.y-self.y)
               self.update_canvas()
 
-     def on_mouse_up(self, event):
+     def on_mouse_up(self, event) -> None:
          if self.rect_start:
                self.rect_end=(event.x-self.x, event.y-self.y)
                if self.rect_start == self.rect_end:
@@ -304,17 +305,17 @@ class ImageEditor:
                          self.input_point = torch.tensor(self.box_list, device=self.device)
                     
      
-     def on_mouse_move(self, event):
+     def on_mouse_move(self, event) -> None:
          if self.image is not None:
              #Draw the cross on canvas
              self.update_canvas(crosshair=(event.x-self.x, event.y-self.y))
 
      #Second mouse button
-     def on_mouse2_down(self, event):
+     def on_mouse2_down(self, event) -> None:
          if self.image is not None:
               self.rect_start=(event.x-self.x, event.y-self.y)
 
-     def on_mouse2_up(self, event):
+     def on_mouse2_up(self, event) -> None:
          if self.rect_start:
                self.rect_end=(event.x-self.x, event.y-self.y)
                if self.rect_start == self.rect_end:
@@ -328,7 +329,7 @@ class ImageEditor:
                     
 
      #Update the canvas method
-     def update_canvas(self, crosshair=None):
+     def update_canvas(self, crosshair=None)-> None :
          if self.image is not None:
                # Resize the image based on the zoom factor
                self.zoomed_width = int(self.image.shape[1] * self.zoom_value)
@@ -383,7 +384,7 @@ class ImageEditor:
                     self.canvas.create_line(cx+self.x, 0+self.y, cx+self.x, canvas_height+cy+self.y, fill=COLOUR_LINE, dash=(2,2))
 
      #Update canvas with annotated image to show annotations
-     def update_canvas_annotated_image(self):
+     def update_canvas_annotated_image(self) -> None :
          if self.segment.annotated_image is not None:
                #Display image
                self.canvas.delete("all")
@@ -391,6 +392,7 @@ class ImageEditor:
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
                self.image=self.segment.image_with_contours.copy()
                self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
+
                #Reset all the taken points, boxes and box lists
                self.rect_start=None
                self.rect_end=None
@@ -399,19 +401,26 @@ class ImageEditor:
                self.box_list=[]
 
      #Update canvas performed only if the annotation is accepted
-     def update_canvas_annotated_image_accepted(self):
+     def update_canvas_annotated_image_accepted(self) -> None :
          if self.segment.annotated_image is not None:
-               #Modify mask if neccessary:
-               print(self.previous_mask)
+               #Store the current self.segment state
+               self.previous_segment=self.segment
+               #If the segmentation is accepted then check if there is previous masks
                if self.previous_mask.size!=0 :
-                    self.segment.resized_mask=self.previous_mask-self.segment.resized_mask
-                    self.previous_mask=[]
+                    #If there is previous accepted masks then combine the masks
+                    self.segment.resized_mask=self.previous_mask+self.segment.resized_mask
+                    self.previous_mask=self.segment.resized_mask
+               else:
+                    #If there is no previous masks, just store the current mask as the previous for the next step
+                    self.previous_mask=self.segment.resized_mask
+
                #Display image
                self.canvas.delete("all")
                self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.segment.image_with_contours))
                self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
                self.image=self.segment.image_with_contours.copy()
                self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
+
                #Reset all the taken points, boxes and box lists
                self.rect_start=None
                self.rect_end=None
@@ -423,7 +432,7 @@ class ImageEditor:
                     self.query_box.destroy()
            
      #Update canvas with annotated image
-     def update_canvas_original_image(self):
+     def update_canvas_original_image(self) -> None:
          if self.original_image is not None:
                #Display image
                self.canvas.delete("all")
@@ -438,7 +447,9 @@ class ImageEditor:
            
 
      #Method that performs image segmentation
-     def perform_segmentation(self):
+     def perform_segmentation(self)-> None :
+          torch.cuda.empty_cache()
+
           if self.image is not None:
                #Set the string name of saved annotations
                #self.file_name=simpledialog.askstring("Annotation", "Enter the filename (without extension):")
@@ -463,7 +474,7 @@ class ImageEditor:
                     self.query_user()
 
      #Method to edit mask using SAM
-     def edit_mask_SAM(self):
+     def edit_mask_SAM(self) -> None :
           if self.image is not None:
                self.previous_mask=self.segment.resized_mask
                #Set the string name of saved annotations
@@ -489,7 +500,7 @@ class ImageEditor:
                     self.query_user()
           pass
      #Query method to check if the user is satisfied with the annotation
-     def query_user(self):
+     def query_user(self) -> None :
           self.image=self.segment.image_with_contours.copy()
           
           self.input_point = np.empty((0, 2))
@@ -509,96 +520,129 @@ class ImageEditor:
           FIX:
           It is better not to use reset_rectangle in this situation, it is better to use the image that have stored image with previous annotations and mask from previous segmetations.
           '''
-          reject_button = customtkinter.CTkButton(self.query_box, text="Reject", font=(self.font_size,self.font_size), command=self.reset_rectangle)
+          reject_button = customtkinter.CTkButton(self.query_box, text="Reject", font=(self.font_size,self.font_size), command=self.backup_to_previous)
           reject_button.pack(padx=20)
 
           self.update_canvas_annotated_image()
-
-     #Save the image method
-     def save_image(self):
-          """Save the current image and move to next one."""
+     
+     def backup_to_previous(self) -> None:
           if self.image is not None:
-               #self.image=self.original_image.copy()
+               #Display image
+               self.canvas.delete("all")
+               self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.previous_segment.image_with_contours))
+               self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
+               self.image=self.previous_segment.image_with_contours.copy()
+               
+               self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
+               self.segment.resized_mask=self.previous_segment.resized_mask
+               #Reset all the taken points, boxes and box lists
                self.rect_start=None
                self.rect_end=None
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.box_list=[]
+
+               if self.query_box != None:
+                    self.query_box.destroy()
+
+
+
+     #Save the image method
+     def save_image(self) -> None:
+          """Save the current image and move to next one."""
+          if self.image is not None:
+               # self.rect_start=None
+               # self.rect_end=None
+               # self.input_point = np.empty((0, 2))
+               # self.input_label = np.empty((0,))
+               # self.box_list=[]
                if self.segment != None:
-                    annotation_save_path=f"AnnotatedDataset/txt/annotation{self.file_name}.txt"
+                    annotation_save_path=f"{FOLDER_TXT}/annotation{self.file_name}.txt"
                     with open(annotation_save_path, "w") as f:
                          f.write(self.segment.yolo_annotation)
 
-                    #mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
-                    mask_save_path=f"AnnotatedDataset/masks/{self.mask_image_name}.png"
-                    # Resize the mask to the original image size
+                    mask_save_path=f"{FOLDER_MASKS}/{self.mask_image_name}.png"
                     cv2.imwrite(mask_save_path, (self.segment.resized_mask * 255).astype(np.uint8))
                     
                     # Save the annotated image
-                    #output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
-                    output_image_path=f"AnnotatedDataset/annotations/{self.original_image_name}.png"
+                    output_image_path=f"{FOLDER_ANNOTATIONS}/{self.original_image_name}.png"
                     self.annotated_image_real_size= cv2.cvtColor(self.segment.annotated_image_real_size, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path, self.annotated_image_real_size)
-                    self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-                    cv2.imwrite(output_image_path, self.image1)
 
                     #Save original image
-                    output_image_path_original=f"AnnotatedDataset/images_without_annotations/{self.original_image_name}.png"
+                    output_image_path_original=f"{FOLDER_ORIGINAL_IMAGES}/{self.original_image_name}.png"
                     self.original_image_rgb = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path_original, self.original_image_rgb)
                else:
-                    mask_save_path=f"AnnotatedDataset/masks/{self.file_name}_mask.png"
-                    mask_save_path=f"AnnotatedDataset/masks/{self.mask_image_name}.png"
+                    mask_save_path=f"{FOLDER_MASKS}/{self.mask_image_name}.png"
                     # Resize the mask to the original image size
                     cv2.imwrite(mask_save_path, (self.polygon.resized_mask * 255).astype(np.uint8))
                     
                     # Save the annotated image
-                    #output_image_path = f"AnnotatedDataset/annotations/{self.file_name}_annotated.png"
-                    output_image_path=f"AnnotatedDataset/annotations/{self.original_image_name}.png"
+                    output_image_path=f"{FOLDER_ANNOTATIONS}/{self.original_image_name}.png"
                     self.image1= cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path, self.image1)
 
                     #Save original image
-                    output_image_path_original=f"AnnotatedDataset/images_without_annotations/{self.original_image_name}.png"
+                    output_image_path_original=f"{FOLDER_ORIGINAL_IMAGES}/{self.original_image_name}.png"
                     self.original_image_rgb = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(output_image_path_original, self.original_image_rgb)
-                    
+
+               #Reset the points coordinates     
                self.rect_start=None
                self.rect_end=None
+               #Reest the input points and input labels (created by the user)
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
+               #Empty the created boxes list
                self.box_list=[]
+
+               #Clear all stored polygon points
                self.polygon_points.clear()
+               #Stopped drawing polygons
                self.drawing_polygon = False
-               self.first_polygon=True
-               self.first_edit_polygon=True
+               #Set the environment ready for the first polygon
+               self.ready_for_first_polygon=True
+               #Set the environment ready for the fitst polygon edit
+               self.ready_for_first_edit_polygon=True
+               #Reset the segmentation mask to 0
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
+               # Reset the temporary image to the original
                self.image=self.original_image.copy()
+
                if self.query_box != None:
                     self.query_box.destroy()
                
-               #self.update_canvas_original_image()
                # Move to the next image
                self.current_image_index += 1
                self.load_current_image()
 
      #Reset the rectangle method (in case the user is not satisfied with the bounding box)
-     def reset_rectangle(self):
+     def reset_rectangle(self) -> None:
           if self.image is not None:
                # Reset the temporary image to the original
                self.image=self.original_image.copy()
+               #Reset the points coordinates
                self.rect_start = None
                self.rect_end = None
-               self.update_canvas_original_image()
+               #Reest the input points and input labels (created by the user)
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
+               #Empty the created boxes list
                self.box_list=[]
+               #Update the canvas to the original image without annotations
+               self.update_canvas_original_image()
 
                #If polygon exists:
+               #Clear all stored polygon points
                self.polygon_points.clear()
+               #Stopped drawing polygons
                self.drawing_polygon = False
-               self.first_polygon=True
-               self.first_edit_polygon=True
+               #Set the environment ready for the first polygon
+               self.ready_for_first_polygon=True
+               #Set the environment ready for the fitst polygon edit
+               self.ready_for_first_edit_polygon=True
+               #Reset the segmentation mask to 0
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
      
                if self.query_box != None:
@@ -608,7 +652,7 @@ class ImageEditor:
 def show_splash():
      splash = Tk()
      splash.overrideredirect(True)
-     image=Image.open("/home/istrazivac/LukaSiktar/PRONOBIS/crta_sam_segmentator/images/MedAP.png")
+     image=Image.open(SPLASH_IMAGE)
      splash.geometry(f"{image.size[0]}x{image.size[1]}+{int(splash.winfo_screenwidth()/2)-int(image.size[0]/2)}+{int(splash.winfo_screenheight()/2)-int(image.size[1]/2)}")
      photo=ImageTk.PhotoImage(image=image)
      label=Label(splash, image=photo)
