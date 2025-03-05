@@ -12,7 +12,7 @@ from soruce_files.constants import *
 
 import os
 
-DATASET_NUM = 69
+DATASET_NUM = 75
 
 class ImageEditor:
      def __init__(self, root : customtkinter.CTk):
@@ -52,6 +52,7 @@ class ImageEditor:
           self.previous_mask=np.array([])
           #Segemtation result
           self.segment = None
+          self.empty_mask = []  #In the case the mask is empty
           #Annotated image conunter
           self.annotated_image_conunter=0
 
@@ -73,6 +74,7 @@ class ImageEditor:
           self.reset_button = customtkinter.CTkButton(button_frame, text="Reset Annotation", font=(self.font_size,self.font_size), command=self.reset_rectangle)
           self.draw_polygon_button = customtkinter.CTkButton(button_frame, text="Draw Polygon", font=(self.font_size,self.font_size), command=self.start_polygon_drawing)
           self.perform_segmentation_button = customtkinter.CTkButton(button_frame, text="Perform segmentation", font=(self.font_size,self.font_size), command=self.perform_segmentation)
+          self.draw_empty_segmetation_button=customtkinter.CTkButton(button_frame, text="Empty Segmentation", font=(self.font_size,self.font_size), command=self.perform_empty_mask_segmentation)
           self.exit_button = customtkinter.CTkButton(button_frame, text="Exit", font=(self.font_size,self.font_size), command=root.quit)
 
           # Arrange these buttons in the grid (1 column, multiple rows)
@@ -82,7 +84,8 @@ class ImageEditor:
           self.draw_polygon_button.grid(row=3, column=0, pady=10, sticky="ew")
           #self.reset_polygon_button.grid(row=4, column=0, pady=10, sticky="ew")
           self.perform_segmentation_button.grid(row=4, column=0, pady=10, sticky="ew")
-          self.exit_button.grid(row=5, column=0, pady=10, sticky="ew")
+          self.draw_empty_segmetation_button.grid(row=5, column=0, pady=10, sticky="ew")
+          self.exit_button.grid(row=6, column=0, pady=10, sticky="ew")
 
           # Create a frame for other controls
           second_frame = customtkinter.CTkFrame(button_frame)
@@ -473,6 +476,11 @@ class ImageEditor:
                     #messagebox.showinfo( "Segmentation", "Image segmentated. Mask and txt saved successfully!")
                     self.query_user()
 
+     def perform_empty_mask_segmentation(self)->None:
+          if self.image is not None:
+               self.empty_mask=np.zeros((self.image.shape[0], self.image.shape[1]), dtype=np.uint8)
+
+
      #Method to edit mask using SAM
      def edit_mask_SAM(self) -> None :
           if self.image is not None:
@@ -556,7 +564,23 @@ class ImageEditor:
                # self.input_point = np.empty((0, 2))
                # self.input_label = np.empty((0,))
                # self.box_list=[]
-               if self.segment != None:
+               if self.empty_mask.shape[0]>0:
+                    #Save empty mask
+                    mask_save_path=f"{FOLDER_MASKS}/{self.mask_image_name}.png"
+                    cv2.imwrite(mask_save_path, self.empty_mask)
+                    self.empty_mask = []
+
+                    # Save the annotated image
+                    output_image_path=f"{FOLDER_ANNOTATIONS}/{self.original_image_name}.png"
+                    self.annotated_image_real_size= cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path, self.annotated_image_real_size)
+
+                    #Save original image
+                    output_image_path_original=f"{FOLDER_ORIGINAL_IMAGES}/{self.original_image_name}.png"
+                    self.original_image_rgb = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(output_image_path_original, self.original_image_rgb)
+
+               elif self.segment != None:
                     annotation_save_path=f"{FOLDER_TXT}/annotation{self.file_name}.txt"
                     with open(annotation_save_path, "w") as f:
                          f.write(self.segment.yolo_annotation)
@@ -609,7 +633,10 @@ class ImageEditor:
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
                # Reset the temporary image to the original
                self.image=self.original_image.copy()
-
+               
+               #Empty the mask
+               self.empty_mask = []
+               
                if self.query_box != None:
                     self.query_box.destroy()
                

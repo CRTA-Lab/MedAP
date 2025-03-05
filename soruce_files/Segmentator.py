@@ -119,6 +119,7 @@ class SAM_Segmentator:
             #print(f"Mask: {self.masks[0]}")
             h,w =self.masks[0].shape
             y,x =np.where(self.masks[0]>0)
+            print(f"x_min: {x.min()}, x_max: {x.max()}")
             x_min, x_max = x.min(), x.max()
             y_min, y_max = y.min(), y.max()
 

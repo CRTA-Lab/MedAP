@@ -14,7 +14,7 @@ FOLDER_ORIGINAL_IMAGES = f'{FOLDER_ANNOTATED}/images_without_annotations'
 FOLDER_TXT = f'{FOLDER_ANNOTATED}/txt'
 
 #SPLASH IMAGE PATH
-SPLASH_IMAGE = "/home/istrazivac/LukaSiktar/PRONOBIS/crta_sam_segmentator/images/MedAP.png"
+SPLASH_IMAGE = "./images/MedAP.png"
 
 # COLOURS
 COLOUR_ROOT_BG = '#2E2E2E'
