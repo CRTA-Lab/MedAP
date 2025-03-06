@@ -1,7 +1,7 @@
 import cv2
 import random
 import numpy as np
-
+import os
 
 def flip(image_path, flip_axis:bool=True):
     '''
@@ -102,15 +102,46 @@ def add_noise(image_path):
     
     aug_img = cv2.merge([h, s, v])
     return cv2.cvtColor(aug_img, cv2.COLOR_HSV2RGB)
+def morphological_transform(image_path, kernel_size:int=5):
+    image = cv2.imread(image_path)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    if random.choice([True, False]):
+        transformed_img = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)  # Opening
+        #print("Applied morphological opening")
+    else:
+        transformed_img = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)  # Closing
+        #print("Applied morphological closing")
+    return transformed_img
     
 if __name__=='__main__':
-    path = 'images/car.png'
+    input_dir = '/home/crta-hp-408/PRONOBIS/SAM_segmentator/AnnotatedDataset/masks/'
+    output_dir = '/home/crta-hp-408/PRONOBIS/SAM_segmentator/AnnotatedDataset/microUS_st_images1'
+    original_input_dir='/home/crta-hp-408/PRONOBIS/SAM_segmentator/AnnotatedDataset/images_without_annotations'
+    os.makedirs(output_dir, exist_ok=True)
     
-    #augmented = flip(path, -1)
-    augmented = flip_random(path)
-    #augmented = blur(path, 15)
-    #augmented = shift(path, 100, 100)
-    #augmented = rotate(path, 90)
-    cv2.imshow('augmented', augmented)
-    cv2.waitKey(0)
+    image_files = [f for f in os.listdir(input_dir) if f.endswith(('png', 'jpg', 'jpeg'))]
     
+    #Morphological opening or closing
+    # for image_name in image_files:
+    #     image_path = os.path.join(input_dir, image_name)
+    #     print(f'Name: {image_path}')
+    #     transformed_image = morphological_transform(image_path, 7)
+    #     image_name = image_name.replace("gt", "st")  # Replace specific text
+
+    #     output_path = os.path.join(output_dir, image_name)
+    #     cv2.imwrite(output_path, transformed_image)
+    #     print(f'Saved: {output_path}')
+    
+    for image_name in image_files:
+        image_path = os.path.join(input_dir, image_name)
+        #print(image_path)
+        original_image = image_name.replace("gt", "img")
+        original_image_path=os.path.join(original_input_dir,original_image)
+        #print(original_image_path)
+        try:
+            original_image=cv2.imread(original_image_path)
+            mask_image=cv2.imread(image_path)
+            #print("OK")
+        except:
+            print("No Images!!!!!!!!!!!!!!!!")
+        #print(original_image_path)
