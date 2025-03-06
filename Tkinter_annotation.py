@@ -1,18 +1,18 @@
-import cv2
-import numpy as np
 from tkinter import Tk, Label, Canvas, filedialog, messagebox, simpledialog
 from tkinter import ttk, Toplevel
 from PIL import Image, ImageTk
 import customtkinter
 import torch
-import time
+import cv2
+import os
+import numpy as np
 from soruce_files.Segmentator import SAM_Segmentator
 from soruce_files.Polygon_segmentator import Polygon_Segmentator
 from soruce_files.constants import *
 
-import os
 
-DATASET_NUM = 75
+
+#DATASET_NUM = 75
 
 class ImageEditor:
      def __init__(self, root : customtkinter.CTk):
@@ -42,7 +42,7 @@ class ImageEditor:
           self.query_box=None
           #Tkinter font size
           self.font_size=FONT_SIZE
-
+          
           # Polygon drawing state
           self.drawing_polygon = False
           self.ready_for_first_polygon = True
@@ -52,6 +52,7 @@ class ImageEditor:
           self.previous_mask=np.array([])
           #Segemtation result
           self.segment = None
+          self.previous_segment = None
           self.empty_mask = []  #In the case the mask is empty
           #Annotated image conunter
           self.annotated_image_conunter=0
@@ -119,6 +120,51 @@ class ImageEditor:
           self.canvas.bind("<Button-3>", self.on_mouse2_down)
           self.canvas.bind("<ButtonRelease-3>", self.on_mouse2_up)
 
+          #Set the dataset number
+          self.dataset_number = None
+          self.ask_for_dataset_number()
+     
+     def ask_for_dataset_number(self):
+        # Create a modal dialog
+        self.popup = customtkinter.CTkToplevel(self.root)
+        self.popup.geometry("500x250")
+        self.popup.title("Enter a Dataset Number")
+        self.popup.attributes("-topmost", True)  # Keeps window on top
+        self.popup.grab_set()  # Makes the popup modal
+        self.popup.focus_force()  # Brings window to the front
+
+        # Disable close button (X)
+        self.popup.protocol("WM_DELETE_WINDOW", self.disable_close)
+
+        # Label
+        label = customtkinter.CTkLabel(self.popup, text="Enter a Dataset number to start annotating:")
+        label.pack(pady=10)
+
+        # Entry widget
+        self.number_entry = customtkinter.CTkEntry(self.popup)
+        self.number_entry.pack(pady=5)
+
+        # Submit button
+        submit_button = customtkinter.CTkButton(self.popup, text="OK", command=self.store_number)
+        submit_button.pack(pady=10)
+
+        self.popup.wait_window()
+
+     def store_number(self):
+          try:
+            self.dataset_number = int(self.number_entry.get())  
+            self.popup.destroy()  # Close popup
+            print(f"Stored Number: {self.dataset_number}")  # Debugging output
+          except ValueError:
+            print("Invalid input! Please enter a number.")
+
+     def disable_close(self):
+        """Disables the close (X) button."""
+        print("Closing is disabled! Please proceed.")
+        label = customtkinter.CTkLabel(self.popup, text="Closing is disabled! Please proceed.")
+        label.pack(pady=30)
+
+     
      def load_images(self) -> None:
         """Load multiple images from a selected directory."""
         directory_path = customtkinter.filedialog.askdirectory(title="Select a directory containing images")
@@ -145,8 +191,8 @@ class ImageEditor:
           if self.current_image_index < len(self.image_paths):
                file_path=self.image_paths[self.current_image_index]
                self.file_name=file_path.split("/")[-1]   #Store the file name of image
-               self.original_image_name=f"microUS_{DATASET_NUM}_img_slice_{self.annotated_image_conunter}"
-               self.mask_image_name=f"microUS_{DATASET_NUM}_gt_slice_{self.annotated_image_conunter}"
+               self.original_image_name=f"microUS_{self.dataset_number}_img_slice_{self.annotated_image_conunter}"
+               self.mask_image_name=f"microUS_{self.dataset_number}_gt_slice_{self.annotated_image_conunter}"
                self.annotated_image_conunter+=1
                self.root.title(self.original_image_name)
                if file_path:
@@ -537,19 +583,23 @@ class ImageEditor:
           if self.image is not None:
                #Display image
                self.canvas.delete("all")
-               self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.previous_segment.image_with_contours))
-               self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
-               self.image=self.previous_segment.image_with_contours.copy()
-               
-               self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
-               self.segment.resized_mask=self.previous_segment.resized_mask
+               if self.previous_segment != None:
+                    self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.previous_segment.image_with_contours))
+                    self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
+                    self.image=self.previous_segment.image_with_contours.copy()
+                    
+                    self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
+                    self.segment.resized_mask=self.previous_segment.resized_mask
+               else:
+                    self.image = self.original_image.copy()
+                    self.update_canvas_original_image()
                #Reset all the taken points, boxes and box lists
                self.rect_start=None
                self.rect_end=None
                self.input_point = np.empty((0, 2))
                self.input_label = np.empty((0,))
                self.box_list=[]
-
+               
                if self.query_box != None:
                     self.query_box.destroy()
 
@@ -564,7 +614,7 @@ class ImageEditor:
                # self.input_point = np.empty((0, 2))
                # self.input_label = np.empty((0,))
                # self.box_list=[]
-               if self.empty_mask.shape[0]>0:
+               if len(self.empty_mask)>1:
                     #Save empty mask
                     mask_save_path=f"{FOLDER_MASKS}/{self.mask_image_name}.png"
                     cv2.imwrite(mask_save_path, self.empty_mask)
@@ -633,7 +683,8 @@ class ImageEditor:
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
                # Reset the temporary image to the original
                self.image=self.original_image.copy()
-               
+               #Reset all the masks
+               self.previous_mask=np.array([])
                #Empty the mask
                self.empty_mask = []
                
@@ -671,7 +722,8 @@ class ImageEditor:
                self.ready_for_first_edit_polygon=True
                #Reset the segmentation mask to 0
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
-     
+               #Reset all the masks
+               self.previous_mask=np.array([])
                if self.query_box != None:
                     self.query_box.destroy()
                
