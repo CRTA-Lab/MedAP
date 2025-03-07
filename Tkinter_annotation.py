@@ -17,7 +17,7 @@ from soruce_files.constants import *
 class ImageEditor:
      def __init__(self, root : customtkinter.CTk):
           self.root=root
-          self.root.title("Image Editor")
+          self.root.title("Medical Annotation Platform 'MedAP'")
           self.root.configure(bg=COLOUR_ROOT_BG)
           self.device= "cuda" if torch.cuda.is_available() else "cpu"
           #Initialize variables
@@ -62,43 +62,43 @@ class ImageEditor:
 
           #Create GUI elements
           self.canvas=Canvas(root, width=GUI_WIDTH, height=GUI_HEIGHT,  bg=COLOUR_CANVAS_BG, highlightthickness=0)
-          self.canvas.pack(side="left", padx=10, pady=20)  # Position the canvas on the left side
+          self.canvas.pack(side="left", padx=40, pady=20)  # Position the canvas on the left side
 
           # Create a frame for the buttons on the right side
           button_frame =customtkinter.CTkFrame(root)
-          button_frame.pack(side="right", fill="y", padx=20)
+          button_frame.pack(side="right", fill="y", padx=30)
 
           #Buttons:
           # Group 1: Main actions (Load, Save, Reset, Perform Segmentation, Exit)
-          self.load_button = customtkinter.CTkButton(button_frame,text="Load", font=(self.font_size,self.font_size), command=self.load_images)          
-          self.save_button = customtkinter.CTkButton(button_frame, text="Save", font=(self.font_size,self.font_size), command=self.save_image)
+          self.load_button = customtkinter.CTkButton(button_frame,text="Load Dataset", font=(self.font_size,self.font_size), command=self.load_images)          
+          self.save_button = customtkinter.CTkButton(button_frame, text="Save Annotation", font=(self.font_size,self.font_size), fg_color='green', hover_color="dark green", command=self.save_image)
           self.reset_button = customtkinter.CTkButton(button_frame, text="Reset Annotation", font=(self.font_size,self.font_size), command=self.reset_rectangle)
           self.draw_polygon_button = customtkinter.CTkButton(button_frame, text="Draw Polygon", font=(self.font_size,self.font_size), command=self.start_polygon_drawing)
           self.perform_segmentation_button = customtkinter.CTkButton(button_frame, text="Perform segmentation", font=(self.font_size,self.font_size), command=self.perform_segmentation)
           self.draw_empty_segmetation_button=customtkinter.CTkButton(button_frame, text="Empty Segmentation", font=(self.font_size,self.font_size), command=self.perform_empty_mask_segmentation)
-          self.exit_button = customtkinter.CTkButton(button_frame, text="Exit", font=(self.font_size,self.font_size), command=root.quit)
+          self.exit_button = customtkinter.CTkButton(button_frame, text="Exit MedAP", font=(self.font_size,self.font_size), fg_color='red', hover_color="dark red", command=root.quit)
 
           # Arrange these buttons in the grid (1 column, multiple rows)
-          self.load_button.grid(row=0, column=0, pady=10, sticky="ew")
-          self.save_button.grid(row=1, column=0, pady=10, sticky="ew")
-          self.reset_button.grid(row=2, column=0, pady=10, sticky="ew")
-          self.draw_polygon_button.grid(row=3, column=0, pady=10, sticky="ew")
+          self.load_button.grid(row=0, column=0, ipadx=12, ipady=12, padx=20, pady=10,sticky="ew")
+          self.save_button.grid(row=1, column=0, ipadx=12, ipady=12, padx=20, pady=20,sticky="ew")
+          self.reset_button.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
+          self.draw_polygon_button.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
           #self.reset_polygon_button.grid(row=4, column=0, pady=10, sticky="ew")
-          self.perform_segmentation_button.grid(row=4, column=0, pady=10, sticky="ew")
-          self.draw_empty_segmetation_button.grid(row=5, column=0, pady=10, sticky="ew")
-          self.exit_button.grid(row=6, column=0, pady=10, sticky="ew")
+          self.perform_segmentation_button.grid(row=4, column=0, padx=20, pady=10, sticky="ew")
+          self.draw_empty_segmetation_button.grid(row=5, column=0, padx=20, pady=20, sticky="ew")
+          self.exit_button.grid(row=6, column=0, ipadx=12, ipady=12, padx=20, pady=30, sticky="ew")
 
           # Create a frame for other controls
           second_frame = customtkinter.CTkFrame(button_frame)
           second_frame.grid(row=7, column=0, pady=20, sticky="ew")
 
           # Zoom controls (Zoom In, Zoom Out)
-          self.zoom_in_button = customtkinter.CTkButton(second_frame, text="Zoom In", font=(self.font_size,self.font_size), command=self.zoom_in)
-          self.zoom_out_button = customtkinter.CTkButton(second_frame, text="Zoom Out", font=(self.font_size,self.font_size), command=self.zoom_out)
+          self.zoom_in_button = customtkinter.CTkButton(second_frame, text="Zoom In", font=(self.font_size,self.font_size), fg_color='gray', hover_color="dark gray", command=self.zoom_in)
+          self.zoom_out_button = customtkinter.CTkButton(second_frame, text="Zoom Out", font=(self.font_size,self.font_size), fg_color='gray', hover_color="dark gray", command=self.zoom_out)
 
           # Arrange zoom buttons horizontally
-          self.zoom_in_button.grid(row=1, column=0, padx=10, pady=20, sticky="ew")
-          self.zoom_out_button.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
+          self.zoom_in_button.grid(row=1, column=0,ipady=12, padx=30, pady=10,sticky="ew")
+          self.zoom_out_button.grid(row=1, column=1, ipady=12, padx=30, pady=10,sticky="ew")
 
           # Mask edit controls
           self.edit_mask_polygon = customtkinter.CTkButton(second_frame, text="Edit Polygon", font=(self.font_size,self.font_size), command=self.edit_mask_polygon)
@@ -106,12 +106,12 @@ class ImageEditor:
           self.edit_mask_SAM_button = customtkinter.CTkButton(second_frame, text="Edit Mask SAM", font=(self.font_size,self.font_size), command=self.edit_mask_SAM)
 
           # Arrrange mask control buttons
-          self.edit_mask_polygon.grid(row=2, column=0, padx=10, sticky="ew")
-          self.edit_mask_button.grid(row=2, column=1, padx=10, sticky="ew")
-          self.edit_mask_SAM_button.grid(row=3, column=0, pady=20, padx=10, sticky="ew")
+          self.edit_mask_polygon.grid(row=2, column=0, padx=10, pady=10)
+          self.edit_mask_button.grid(row=2, column=1, padx=10, pady=10)
+          self.edit_mask_SAM_button.grid(row=3, column=0, pady=10, padx=10)
 
           # Bind mouse events for rectangle drawing (unchanged)
-          self.canvas1 = Canvas(root, width=500, height=500, bg=COLOUR_CANVAS_MOUSE)
+          self.canvas1 = Canvas(root, width=600, height=600, bg=COLOUR_CANVAS_MOUSE, highlightthickness=0)
           self.canvas.bind("<Button-1>", self.on_mouse_down)
           self.canvas.bind("<Double-1>", self.on_double_click) 
           self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
@@ -485,6 +485,7 @@ class ImageEditor:
          if self.original_image is not None:
                #Display image
                self.canvas.delete("all")
+               print("AAAAAAAAAAAAAAa")
                 # Resize the image based on the zoom factor
                zoomed_width = int(self.original_image.shape[1] * self.zoom_value)
                zoomed_height = int(self.original_image.shape[0] * self.zoom_value)
@@ -584,6 +585,7 @@ class ImageEditor:
                #Display image
                self.canvas.delete("all")
                if self.previous_segment != None:
+                    print("bbbbbb")
                     self.tk_image=ImageTk.PhotoImage(image=Image.fromarray(self.previous_segment.image_with_contours))
                     self.canvas.create_image(self.x,self.y,anchor="nw", image=self.tk_image)
                     self.image=self.previous_segment.image_with_contours.copy()
@@ -591,6 +593,7 @@ class ImageEditor:
                     self.image=cv2.resize(self.image, (self.original_image.shape[1], self.original_image.shape[0]))
                     self.segment.resized_mask=self.previous_segment.resized_mask
                else:
+                    print("ccccccccccs")
                     self.image = self.original_image.copy()
                     self.update_canvas_original_image()
                #Reset all the taken points, boxes and box lists
@@ -682,12 +685,13 @@ class ImageEditor:
                #Reset the segmentation mask to 0
                self.mask = np.zeros((self.image_shape[1], self.image_shape[0]), dtype=np.uint8)
                # Reset the temporary image to the original
-               self.image=self.original_image.copy()
+               self.image=None
+               self.original_image=None
                #Reset all the masks
                self.previous_mask=np.array([])
                #Empty the mask
                self.empty_mask = []
-               
+               self.previous_segment = None
                if self.query_box != None:
                     self.query_box.destroy()
                
@@ -710,7 +714,7 @@ class ImageEditor:
                self.box_list=[]
                #Update the canvas to the original image without annotations
                self.update_canvas_original_image()
-
+               self.previous_segment = None
                #If polygon exists:
                #Clear all stored polygon points
                self.polygon_points.clear()
@@ -737,7 +741,7 @@ def show_splash():
      label=Label(splash, image=photo)
      label.pack()
 
-     splash.after(3000, splash.destroy)
+     splash.after(2000, splash.destroy)
      splash.mainloop()
 
 if __name__=="__main__":

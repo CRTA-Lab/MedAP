@@ -104,7 +104,7 @@ class SAM_Segmentator:
                     boxes=transformed_boxes,
                     multimask_output=False,
                 )
-                print(self.masks)
+                #print(self.masks)
 
         elif self.prompt_state=="Point":
             self.masks, self.scores, self.logits = self.predictor.predict(
@@ -119,7 +119,7 @@ class SAM_Segmentator:
             #print(f"Mask: {self.masks[0]}")
             h,w =self.masks[0].shape
             y,x =np.where(self.masks[0]>0)
-            print(f"x_min: {x.min()}, x_max: {x.max()}")
+            #print(f"x_min: {x.min()}, x_max: {x.max()}")
             x_min, x_max = x.min(), x.max()
             y_min, y_max = y.min(), y.max()
 
@@ -221,7 +221,7 @@ class SAM_Segmentator:
         Edit segmentation mask using polygon points.
         """
         self.polygon_points = polygon_points
-        print(f"Polygon points: {self.polygon_points}")
+        #print(f"Polygon points: {self.polygon_points}")
 
         # Resize the mask to match the image dimensions, if needed
 
@@ -238,7 +238,7 @@ class SAM_Segmentator:
         self.resized_mask[polygon_mask == 1] = 0
         self.resized_mask = cv2.resize(self.resized_mask,(self.image_with_contours.shape[1], self.image_with_contours.shape[0]),interpolation=cv2.INTER_NEAREST)
 
-        print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
+        #print(f"Mask shape: {self.resized_mask.shape}, image with contours shape: {self.image_with_contours.shape}")
 
         # Find contours on the updated mask
         self.contours, self.hierarchy = cv2.findContours(
