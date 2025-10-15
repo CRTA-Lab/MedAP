@@ -14,4 +14,8 @@
 /Gotove anotacije
 /Segmentation_results.png
 
-AnnotatedDataset6*/
+AnnotatedDataset*/
+/data
+/data_mask
+/data_premask
+/epoch_19.pth

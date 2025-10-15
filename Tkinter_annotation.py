@@ -203,7 +203,7 @@ class ImageEditor:
                     self.image_shape=[self.image.shape[1],self.image.shape[0]] #width, height
                     #Copy the original image of original shape
                     self.original_image=self.image.copy()
-                    self.zoom_value=1.0
+                    self.zoom_value=1.5
                     self.update_canvas()
 
                     #Load arrays that are used if points are used
@@ -421,7 +421,7 @@ class ImageEditor:
                try:
                     for point in self.input_point:
                          x1, y1 = point
-                         self.canvas.create_rectangle(x1 + self.x, y1 + self.y, x1 + self.x, y1 + self.y, outline=COLOUR_BOX_OUTLINE, width=2)               
+                         self.canvas.create_rectangle(x1 + self.x, y1 + self.y, x1 + self.x, y1 + self.y, outline=COLOUR_BOX_OUTLINE, width=8)               
                except:
                     pass
                #Display the cross for easier annotation
@@ -745,7 +745,7 @@ def show_splash():
      splash.mainloop()
 
 if __name__=="__main__":
-       show_splash()
+       #show_splash()
        root=customtkinter.CTk()
        app=ImageEditor(root)
        root.mainloop()
