@@ -51,16 +51,34 @@ Segmentator outputs:
 
 To start the application, build the Python executable and start it.
 
+Choose the SAM or Custom model segmentation:
+
+SAM:
+
 1. Choose the apropriate image
 2. Draw the bounding box around specified object or click on it
 3. Perform segemetation using SAM
 4. Edit segmentation (if neccessary)
 5. Save the segmetation results
 
+Custom model:
+
+1. Load the dataset
+2. Check the given annotation and modify if neccessary.
+3. If the annotation is not present, perform manual annotation.
+4. Save the segmentation results
+
+
 ## Features
+
+SAM:
 
 Segment using Point prompt
 Segment using Box prompt
 Edit the segmentation
 Accept or Reject segmentation
 
+Contour Editor:
+
+Automatic segmentation
+Manual segmentation
