@@ -170,7 +170,7 @@ class ImageEditor:
         directory_path = customtkinter.filedialog.askdirectory(title="Select a directory containing images")
         if directory_path:
             # Filter for valid image files
-            valid_extensions = {".jpeg", ".jpg", ".png"}
+            valid_extensions = {".jpeg", ".jpg", ".png", ".dcm"}
             self.image_paths = [
                 os.path.join(directory_path, file)
                 for file in os.listdir(directory_path)
